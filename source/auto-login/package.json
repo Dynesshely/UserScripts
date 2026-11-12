@@ -1,0 +1,17 @@
+{
+  "name": "@dynesshely/userscript-auto-login",
+  "version": "0.0.1",
+  "private": true,
+  "description": "A script help you to auto login into some websites",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.cjs"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "webpack-userscript": "^3.2.3"
+  }
+}

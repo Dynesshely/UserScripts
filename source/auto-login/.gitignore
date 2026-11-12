@@ -1,0 +1,4 @@
+# dependencies
+node_modules/
+
+# 提交 dist/：构建产物是用户脚本的实际安装文件
