@@ -45,3 +45,17 @@ source/<slug>/
 
 推送到 `main` 或提交 PR 时，GitHub Actions 会对每个脚本分别执行 `npm ci` + `npm run build`，
 并检查 `dist/` 中的构建产物与源码一致（构建后工作区无差异），确保仓库里的产物始终可复现。
+
+## 发布
+
+打 `v*` 版本 tag 会触发 [Release workflow](.github/workflows/release.yml)：CI 重新构建全部脚本，
+把产物以扁平文件名发布到 [`release` 分支](https://github.com/Dynesshely/UserScripts/tree/release)。
+脚本平台（GreasyFork 等）通过 GitHub webhook + raw URL 自动拉取更新，不使用 GitHub Release 或 Package。
+
+完整的仓库侧发布步骤与平台侧配置见 [docs/RELEASING.md](docs/RELEASING.md)。
+
+发布后可直接用 raw 地址安装：
+
+- <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/auto-login.user.js>
+- <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/disable-pcdn.user.js>
+- <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/luogu-helper.user.js>

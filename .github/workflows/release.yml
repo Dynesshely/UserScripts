@@ -1,0 +1,122 @@
+name: Release
+
+# 打 v* 版本 tag 时触发：构建三个脚本，并把构建产物发布到 release 分支。
+# 发布模型是"平台侧自动拉取"：
+#   - 不创建 GitHub Release，也不发布 GitHub Package / npm 包；
+#   - 产物只放在 release 分支根目录（扁平结构）；
+#   - GreasyFork 通过 GitHub webhook 感知 release 分支的更新，再从 raw URL 拉取脚本。
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+# 同一时间只允许一个发布任务写 release 分支，避免两个 tag 并发推送互相覆盖
+concurrency:
+  group: release-branch
+  cancel-in-progress: false
+
+env:
+  RELEASE_BRANCH: release
+  STAGING_DIR: ${{ runner.temp }}/release-dist
+
+jobs:
+  release:
+    name: Build and publish to release branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # 发布步骤要 fetch/合并远端 release 分支，需要完整历史
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            source/auto-login/package-lock.json
+            source/disable-pcdn/package-lock.json
+            source/luogu-helper/package-lock.json
+
+      - name: Install dependencies and build
+        run: |
+          set -euo pipefail
+          # 依次构建三个脚本：每个脚本目录内独立 npm ci + npm run build
+          for project in auto-login disable-pcdn luogu-helper; do
+            echo "::group::构建 source/${project}"
+            (
+              cd "source/${project}"
+              npm ci
+              npm run build
+            )
+            echo "::endgroup::"
+          done
+
+      - name: Verify dist is committed
+        run: |
+          set -euo pipefail
+          # 构建后 dist/ 仍有差异，说明 tag 指向的提交没有包含最新产物
+          if ! git diff --exit-code -- source/*/dist; then
+            echo "::error::tag 指向的提交中 dist/ 与源码不一致，请重新构建并提交 dist 后重新打 tag。"
+            exit 1
+          fi
+
+      - name: Collect release files
+        run: |
+          set -euo pipefail
+          mkdir -p "${STAGING_DIR}"
+          # 统一改成扁平文件名：<slug>.user.js
+          cp source/auto-login/dist/auto-login.user.js "${STAGING_DIR}/"
+          cp source/disable-pcdn/dist/disable-pcdn.user.js "${STAGING_DIR}/"
+          cp source/luogu-helper/dist/luogu-helper.user.js "${STAGING_DIR}/"
+          ls -l "${STAGING_DIR}"
+
+      - name: Publish to release branch
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_DIR="${RUNNER_TEMP}/release-branch"
+
+          # release 分支上的提交统一使用 GitHub Actions 机器人身份
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "${RELEASE_BRANCH}" >/dev/null 2>&1; then
+            # 分支已存在：基于远端最新提交增量更新，不重写历史
+            echo "检测到已有的 ${RELEASE_BRANCH} 分支，基于最新提交更新"
+            git fetch --no-tags origin "refs/heads/${RELEASE_BRANCH}:refs/remotes/origin/${RELEASE_BRANCH}"
+            git worktree add --quiet -B "${RELEASE_BRANCH}" "${RELEASE_DIR}" "refs/remotes/origin/${RELEASE_BRANCH}"
+          else
+            # 分支不存在：先建独立工作区，再在里面创建孤立分支
+            echo "未检测到 ${RELEASE_BRANCH} 分支，创建孤立分支"
+            git worktree add --quiet --detach "${RELEASE_DIR}"
+          fi
+
+          cd "${RELEASE_DIR}"
+
+          if [ "$(git symbolic-ref --quiet --short HEAD || true)" != "${RELEASE_BRANCH}" ]; then
+            git checkout --quiet --orphan "${RELEASE_BRANCH}"
+          fi
+
+          # 清空工作区：release 分支根目录只保留三个扁平的 .user.js
+          git rm --quiet -rf . || true
+          git clean --quiet -ffdx
+
+          cp "${STAGING_DIR}"/*.user.js .
+          git add -- *.user.js
+
+          if git diff --cached --quiet; then
+            echo "${RELEASE_BRANCH} 分支产物无变化，跳过提交"
+            exit 0
+          fi
+
+          git commit --quiet -m "chore(release): 发布 ${TAG_NAME} 的构建产物"
+          git push origin "HEAD:refs/heads/${RELEASE_BRANCH}"
+          echo "${RELEASE_BRANCH} 分支已更新：$(git rev-parse --short HEAD)"
