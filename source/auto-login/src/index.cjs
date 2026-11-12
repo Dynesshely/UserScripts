@@ -59,6 +59,78 @@ function registerMenus() {
   });
 }
 
+function fillInput(element, value) {
+  element.value = value;
+  element.dispatchEvent(new Event("input", { bubbles: true }));
+  element.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function clickElement(element) {
+  const target =
+    (element.closest && element.closest("button, [role='button'], a")) ||
+    element;
+  target.click();
+}
+
+/**
+ * 回放示教得到的自定义登录流程
+ * 支持“先填用户名，点击下一步，等密码框出现后再填密码”的两步式站点。
+ */
+function autoLoginCustom(cfg) {
+  const customSite = config.loadCustomSite(hostname);
+
+  if (!customSite || !customSite.steps || customSite.steps.length === 0) {
+    console.warn("[Auto Login] 当前站点使用自定义类型，但还没有示教数据");
+    return;
+  }
+
+  const POLL_INTERVAL = 300;
+  const STEP_TIMEOUT = 15000;
+  let index = 0;
+  let stepStartedAt = Date.now();
+
+  console.log(
+    "[Auto Login] 开始执行示教流程，共 " + customSite.steps.length + " 步"
+  );
+
+  function run() {
+    if (index >= customSite.steps.length) {
+      console.log("✅ 示教登录流程执行完毕");
+      return;
+    }
+
+    if (Date.now() - stepStartedAt > STEP_TIMEOUT) {
+      console.log("🔴 示教登录流程超时，未找到后续页面元素");
+      return;
+    }
+
+    const step = customSite.steps[index];
+    const element = document.querySelector(step.selector);
+
+    if (!element) {
+      setTimeout(run, POLL_INTERVAL);
+      return;
+    }
+
+    if (step.action === "fill") {
+      const value = step.field === "username" ? cfg.username : cfg.password;
+      fillInput(element, value);
+      console.log(
+        "✅ 已填充" + (step.field === "username" ? "用户名" : "密码")
+      );
+    } else {
+      clickElement(element);
+      console.log("✅ 已点击：" + step.selector);
+    }
+
+    index += 1;
+    stepStartedAt = Date.now();
+    setTimeout(run, 400);
+  }
+
+  setTimeout(run, 200);
+}
+
 function autoLoginBody(cfg) {
   if (cfg.site_enabled === false) {
     console.log("🔴 当前站点未启用自动登录");
@@ -245,6 +317,11 @@ function bootstrap() {
     !current.password
   ) {
     console.log("🟡 尚未配置账号，点击页面右下角按钮或菜单项进行设置");
+    return;
+  }
+
+  if (current.site_type === config.CUSTOM_SITE_TYPE) {
+    autoLoginCustom(current);
     return;
   }
 

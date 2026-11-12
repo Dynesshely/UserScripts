@@ -2,6 +2,7 @@
 
 const config = require("./config.cjs");
 const selectors = require("./selectors.cjs");
+const picker = require("./picker.cjs");
 
 const LOGO_URL =
   "https://raw.githubusercontent.com/Dynesshely/UserScripts/main/assets/auto-login/logo.png";
@@ -123,6 +124,17 @@ const STYLE_TEXT = [
   ".al-tour-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }",
   ".al-tour-actions .al-btn { height: 34px; padding: 0 12px; font-size: 13px; }",
   ".al-tour-actions .al-btn-primary { flex: 1; }",
+  ".al-picker { position: fixed; inset: 0; pointer-events: none; z-index: 2147483647; }",
+  ".al-pick-hole { position: fixed; display: none; border: 2px solid #2563eb; border-radius: 8px; background: rgba(37, 99, 235, .08); pointer-events: none; }",
+  ".al-pick-label { position: fixed; display: none; padding: 3px 8px; border-radius: 6px; background: #0f172a; color: #fff; font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; pointer-events: none; white-space: nowrap; }",
+  ".al-pick-bar { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); background: #fff; color: #0f172a; border-radius: 14px; box-shadow: 0 20px 60px rgba(15, 23, 42, .4); padding: 14px 18px; pointer-events: auto; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }",
+  ".al-pick-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }",
+  ".al-pick-badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: #2563eb; }",
+  ".al-pick-step { font-size: 11px; color: #64748b; }",
+  ".al-pick-title { margin-top: 6px; font-size: 15px; font-weight: 700; }",
+  ".al-pick-text { margin-top: 4px; font-size: 13px; line-height: 1.6; color: #475569; }",
+  ".al-pick-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }",
+  ".al-pick-actions .al-btn { height: 36px; padding: 0 14px; font-size: 13px; }",
   ".al-toast {",
   "  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(8px);",
   "  padding: 10px 16px; border-radius: 10px; background: #0f172a; color: #fff;",
@@ -149,6 +161,8 @@ const STYLE_TEXT = [
   "  .al-btn-secondary:hover { background: #1e3a8a; }",
   "  .al-tour-bubble { background: #0f172a; color: #e2e8f0; }",
   "  .al-tour-text { color: #94a3b8; }",
+  "  .al-pick-bar { background: #0f172a; color: #e2e8f0; }",
+  "  .al-pick-text { color: #94a3b8; }",
   "}",
 ].join("\n");
 
@@ -164,10 +178,6 @@ let fabEl = null;
 let layerEl = null;
 let toastTimer = null;
 
-let tourEl = null;
-let tourSteps = [];
-let tourIndex = 0;
-let tourFrame = null;
 
 let currentHostname = "";
 let onSavedCallback = null;
@@ -286,6 +296,11 @@ function buildPanel() {
     typeSelect.appendChild(option);
   });
 
+  const customOption = document.createElement("option");
+  customOption.value = config.CUSTOM_SITE_TYPE;
+  customOption.textContent = "自定义（本页示教）";
+  typeSelect.appendChild(customOption);
+
   const toast = document.createElement("div");
   toast.className = "al-toast";
   layerEl.appendChild(toast);
@@ -357,22 +372,7 @@ function bindPanelEvents() {
     savePanel();
   });
 
-  el.tour.addEventListener("click", () => {
-    const draft = currentDraft();
-    if (!draft.username || draft.username === config.FIELD_DEFAULTS.username) {
-      showToast("先填写用户名再开始示教");
-      return;
-    }
-    if (!draft.password) {
-      showToast("先填写密码再开始示教");
-      return;
-    }
-    if (!draft.terms_accepted) {
-      showToast("请先勾选使用说明");
-      return;
-    }
-    startTutorial(draft);
-  });
+  el.tour.addEventListener("click", startInstruct);
 
   el.clear.addEventListener("click", () => {
     const next = config.clearConfig(currentHostname);
@@ -627,247 +627,35 @@ function mountSetupFab(hostname, cfg, onOpen) {
   }
 }
 
-/* ---------- 示教模式 ---------- */
+/* ---------- 示教：教脚本识别本页登录表单 ---------- */
 
-function resolveSubmit(login) {
-  if (!login || !login.Selector) {
-    return null;
-  }
-  if (login.InnerText) {
-    const candidates = document.querySelectorAll(login.Selector);
-    const span = Array.from(candidates).find(
-      (item) => item.textContent.trim() === login.InnerText
-    );
-    if (span) {
-      return span.closest("button") || span;
-    }
-  }
-  return document.querySelector(login.Selector);
-}
-
-function buildTourSteps(cfg) {
-  const site = selectors.selectors.find((item) => item.Name === cfg.site_type);
-  if (!site) {
-    return [];
-  }
-  const s = site.Selector || {};
-
-  const steps = [
-    {
-      title: "第 1 步 · 用户名输入框",
-      text: "脚本会自动定位这个输入框，填入为该站点保存的用户名。",
-      getTarget: () => (s.USERNAME ? document.querySelector(s.USERNAME) : null),
-      demo: "username",
-    },
-    {
-      title: "第 2 步 · 密码输入框",
-      text: "密码同样只保存在本机浏览器存储中，不会上传到任何服务器。",
-      getTarget: () => (s.PASSWORD ? document.querySelector(s.PASSWORD) : null),
-      demo: "password",
-    },
-    {
-      title: "第 3 步 · 登录按钮",
-      text: "用户名和密码都填好后，脚本会点击这个按钮提交登录。",
-      getTarget: () => resolveSubmit(site.Login),
-      demo: null,
-    },
-    {
-      title: "示教结束",
-      text: "保存配置后，再次打开该站点的登录页，脚本会自动完成以上步骤。",
-      getTarget: () => null,
-      demo: null,
-    },
-  ];
-
-  return steps;
-}
-
-function startTutorial(cfg) {
-  const steps = buildTourSteps(cfg);
-  if (!steps.length) {
-    showToast("当前站点类型没有可用的登录表单配置");
-    return;
-  }
-
-  tourSteps = steps;
-  tourIndex = 0;
-  ensureRoot();
+function startInstruct() {
   if (layerEl) {
     layerEl.hidden = true;
   }
-  renderTour();
 
-  window.addEventListener("resize", scheduleTourPosition);
-  window.addEventListener("scroll", scheduleTourPosition, true);
-  document.addEventListener("keydown", tourKeyHandler, true);
-}
-
-function endTutorial() {
-  window.removeEventListener("resize", scheduleTourPosition);
-  window.removeEventListener("scroll", scheduleTourPosition, true);
-  document.removeEventListener("keydown", tourKeyHandler, true);
-
-  if (tourFrame) {
-    cancelAnimationFrame(tourFrame);
-    tourFrame = null;
-  }
-  if (tourEl) {
-    tourEl.remove();
-    tourEl = null;
-  }
-
-  tourSteps = [];
-  tourIndex = 0;
-
-  if (layerEl) {
-    layerEl.hidden = false;
-  }
-}
-
-function tourKeyHandler(event) {
-  if (event.key === "Escape" && tourEl) {
-    event.stopPropagation();
-    endTutorial();
-  }
-}
-
-function scheduleTourPosition() {
-  if (tourFrame) {
-    return;
-  }
-  tourFrame = requestAnimationFrame(() => {
-    tourFrame = null;
-    positionTour();
-  });
-}
-
-function renderTour() {
-  ensureRoot();
-  if (!tourEl) {
-    tourEl = document.createElement("div");
-    tourEl.className = "al-tour";
-    shadowRoot.appendChild(tourEl);
-  }
-
-  const step = tourSteps[tourIndex];
-  const isFirst = tourIndex === 0;
-  const isLast = tourIndex === tourSteps.length - 1;
-
-  tourEl.innerHTML = [
-    '<div class="al-tour-hole"></div>',
-    '<div class="al-tour-bubble">',
-    '  <div class="al-tour-progress"></div>',
-    '  <div class="al-tour-title"></div>',
-    '  <div class="al-tour-text"></div>',
-    '  <div class="al-tour-actions">',
-    '    <button class="al-btn al-btn-ghost" data-act="prev" type="button">上一步</button>',
-    step.demo
-      ? '    <button class="al-btn al-btn-secondary" data-act="demo" type="button">演示填充</button>'
-      : "",
-    '    <button class="al-btn al-btn-primary" data-act="next" type="button">' +
-      (isLast ? "完成" : "下一步") +
-      "</button>",
-    '    <button class="al-btn al-btn-ghost" data-act="exit" type="button">退出</button>',
-    "  </div>",
-    "</div>",
-  ].join("");
-
-  tourEl.querySelector(".al-tour-progress").textContent =
-    "示教 " + (tourIndex + 1) + " / " + tourSteps.length;
-  tourEl.querySelector(".al-tour-title").textContent = step.title;
-  tourEl.querySelector(".al-tour-text").textContent = step.text;
-  tourEl.querySelector('[data-act="prev"]').disabled = isFirst;
-
-  const target = step.getTarget();
-  if (target && target.isConnected && target.scrollIntoView) {
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-
-  tourEl.querySelectorAll("button[data-act]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const action = button.getAttribute("data-act");
-      if (action === "prev") {
-        tourIndex = Math.max(0, tourIndex - 1);
-        renderTour();
-      } else if (action === "next") {
-        if (isLast) {
-          endTutorial();
-        } else {
-          tourIndex += 1;
-          renderTour();
-        }
-      } else if (action === "demo") {
-        fillDemo(step.demo);
-      } else {
-        endTutorial();
+  picker.startPicker({
+    hostEl: hostEl,
+    shadowRoot: shadowRoot,
+    hostname: currentHostname,
+    onDone: function () {
+      if (layerEl) {
+        layerEl.hidden = false;
       }
-    });
+      const el = cachedElements();
+      el.siteType.value = config.CUSTOM_SITE_TYPE;
+      el.hint.textContent =
+        "示教完成：已记录本站点的登录步骤，站点类型已切换为「自定义（本页示教）」。填写账号后保存即可。";
+      el.hint.className = "al-hint is-ok";
+      showToast("示教完成");
+      refreshSteps();
+    },
+    onCancel: function () {
+      if (layerEl) {
+        layerEl.hidden = false;
+      }
+    },
   });
-
-  positionTour();
-}
-
-function positionTour() {
-  if (!tourEl || !tourSteps.length) {
-    return;
-  }
-
-  const step = tourSteps[tourIndex];
-  const hole = tourEl.querySelector(".al-tour-hole");
-  const bubble = tourEl.querySelector(".al-tour-bubble");
-  if (!hole || !bubble) {
-    return;
-  }
-
-  const target = step.getTarget && step.getTarget();
-  const rect = target ? target.getBoundingClientRect() : null;
-  const visible = Boolean(rect && rect.width > 0 && rect.height > 0);
-
-  if (visible) {
-    hole.style.display = "block";
-    hole.style.left = rect.left - 6 + "px";
-    hole.style.top = rect.top - 6 + "px";
-    hole.style.width = rect.width + 12 + "px";
-    hole.style.height = rect.height + 12 + "px";
-  } else {
-    hole.style.display = "none";
-  }
-
-  const bubbleWidth = bubble.offsetWidth || 360;
-  const bubbleHeight = bubble.offsetHeight || 170;
-
-  if (visible) {
-    let left = rect.left + rect.width / 2 - bubbleWidth / 2;
-    left = Math.max(12, Math.min(left, window.innerWidth - bubbleWidth - 12));
-    let top = rect.bottom + 18;
-    if (top + bubbleHeight > window.innerHeight - 12) {
-      top = rect.top - bubbleHeight - 18;
-    }
-    top = Math.max(12, top);
-    bubble.style.left = left + "px";
-    bubble.style.top = top + "px";
-  } else {
-    bubble.style.left =
-      Math.max(12, window.innerWidth / 2 - bubbleWidth / 2) + "px";
-    bubble.style.top =
-      Math.max(12, window.innerHeight / 2 - bubbleHeight / 2) + "px";
-  }
-}
-
-function fillDemo(kind) {
-  const index = kind === "username" ? 0 : 1;
-  const step = tourSteps[index];
-  const input = step && step.getTarget ? step.getTarget() : null;
-
-  if (!input || !input.isConnected) {
-    showToast("当前页面没有找到该输入框");
-    return;
-  }
-
-  input.value = kind === "username" ? "demo-user" : "demo-password";
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  input.dispatchEvent(new Event("change", { bubbles: true }));
-  showToast(kind === "username" ? "已演示填入用户名" : "已演示填入密码");
 }
 
 module.exports = {
