@@ -1,6 +1,6 @@
 {
   "name": "userscript-auto-login",
-  "version": "0.0.1",
+  "version": "2026.11.12",
   "private": true,
   "description": "A userscript that fills in credentials and logs in automatically on configured sites",
   "main": "index.js",
