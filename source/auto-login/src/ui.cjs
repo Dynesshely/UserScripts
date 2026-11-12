@@ -4,9 +4,6 @@ const config = require("./config.cjs");
 const selectors = require("./selectors.cjs");
 const picker = require("./picker.cjs");
 
-const LOGO_URL =
-  "https://raw.githubusercontent.com/Dynesshely/UserScripts/main/assets/auto-login/logo.png";
-
 const STYLE_TEXT = [
   ":host { all: initial; }",
   ":host, :host * { box-sizing: border-box; }",
@@ -35,16 +32,6 @@ const STYLE_TEXT = [
   "@keyframes al-pop { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }",
   ".al-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 10px; }",
   ".al-brand { display: flex; align-items: center; gap: 12px; }",
-  ".al-logo {",
-  "  width: 40px; height: 40px; border-radius: 12px; flex: none; overflow: hidden;",
-  "  display: flex; align-items: center; justify-content: center; position: relative;",
-  "  background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff;",
-  "  font-weight: 700; font-size: 14px; letter-spacing: .5px;",
-  "}",
-  ".al-logo-img { width: 100%; height: 100%; object-fit: cover; display: block; }",
-  ".al-logo-fallback { display: none; }",
-  ".al-logo.is-failed .al-logo-img { display: none; }",
-  ".al-logo.is-failed .al-logo-fallback { display: block; }",
   ".al-title { font-size: 17px; font-weight: 700; line-height: 1.2; }",
   ".al-host { margin-top: 3px; font-size: 12px; color: #64748b; }",
   ".al-close {",
@@ -88,7 +75,11 @@ const STYLE_TEXT = [
   ".al-eye:hover { background: #eff6ff; }",
   ".al-row { display: flex; gap: 12px; }",
   ".al-field-half { flex: 1; min-width: 0; }",
-  "select.al-input { appearance: none; -webkit-appearance: none; padding-right: 30px; background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%); background-position: calc(100% - 16px) 18px, calc(100% - 11px) 18px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }",
+  ".al-select-wrap { position: relative; display: block; }",
+  ".al-select { width: 100%; height: 42px; padding: 0 36px 0 12px; border-radius: 10px; border: 1px solid #dbe2ea; background: #f8fafc; color: #0f172a; font-size: 14px; font-family: inherit; appearance: none; -webkit-appearance: none; outline: none; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }",
+  ".al-select:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, .16); }",
+  ".al-select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #64748b; pointer-events: none; }",
+  ".al-select option { background: #ffffff; color: #0f172a; }",
   ".al-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }",
   ".al-switch input { position: absolute; opacity: 0; pointer-events: none; }",
   ".al-switch-track { width: 40px; height: 24px; border-radius: 999px; background: #e2e8f0; position: relative; transition: background .18s ease; flex: none; }",
@@ -147,6 +138,10 @@ const STYLE_TEXT = [
   "  .al-panel { background: #0f172a; color: #e2e8f0; }",
   "  .al-host, .al-label, .al-switch-text, .al-hint { color: #94a3b8; }",
   "  .al-input { background: #111c31; border-color: #24324a; color: #e2e8f0; }",
+  "  .al-select { background: #111c31; border-color: #24324a; color: #e2e8f0; }",
+  "  .al-select:focus { background: #0b1526; }",
+  "  .al-select-arrow { color: #94a3b8; }",
+  "  .al-select option { background: #0f172a; color: #e2e8f0; }",
   "  .al-input:focus { background: #0b1526; }",
   "  .al-close:hover { background: #1e293b; color: #e2e8f0; }",
   "  .al-switch-track { background: #334155; }",
@@ -221,7 +216,6 @@ function panelMarkup() {
     '<section class="al-panel" role="dialog" aria-modal="true" aria-label="Auto Login 配置">',
     '  <header class="al-head">',
     '    <div class="al-brand">',
-    '      <span class="al-logo"><img class="al-logo-img" src="' + LOGO_URL + '" alt="" /><span class="al-logo-fallback">AL</span></span>',
     '      <div><div class="al-title">Auto Login</div><div class="al-host"></div></div>',
     "    </div>",
     '    <button class="al-close" type="button" aria-label="关闭">×</button>',
@@ -242,7 +236,10 @@ function panelMarkup() {
     '    <div class="al-row">',
     '      <label class="al-field al-field-half" data-field="site_type">',
     '        <span class="al-label">站点类型</span>',
-    '        <select class="al-input" id="al-site-type"></select>',
+    '        <span class="al-select-wrap">',
+    '          <select class="al-select" id="al-site-type"></select>',
+    '          <svg class="al-select-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    '        </span>',
     "      </label>",
     '      <label class="al-field al-field-half" data-field="site_entrance">',
     '        <span class="al-label">入口路径（可选）</span>',
@@ -278,15 +275,6 @@ function buildPanel() {
   const termsText = layerEl.querySelector(".al-terms span");
   termsText.textContent = config.TERMS_TEXT;
 
-  const logoImg = layerEl.querySelector(".al-logo-img");
-  if (logoImg) {
-    logoImg.addEventListener("error", () => {
-      const logo = layerEl.querySelector(".al-logo");
-      if (logo) {
-        logo.classList.add("is-failed");
-      }
-    });
-  }
 
   const typeSelect = layerEl.querySelector("#al-site-type");
   config.SITE_TYPES.forEach((type) => {

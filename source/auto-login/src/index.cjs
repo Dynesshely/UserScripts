@@ -38,7 +38,6 @@ function openSettings() {
   const cfg = config.loadConfig(hostname);
   ui.openPanel(hostname, cfg, function (next) {
     current = next;
-    ui.mountSetupFab(hostname, next, openSettings);
     console.log("[Auto Login] 配置已更新", next.site_enabled);
   });
 }
@@ -299,7 +298,6 @@ function autoLoginBody(cfg) {
 function bootstrap() {
   console.log("🔵 Auto Login 脚本已加载 ...");
   registerMenus();
-  ui.mountSetupFab(hostname, current, openSettings);
 
   if (current.site_enabled === false) {
     console.log("🔴 当前站点未启用自动登录");

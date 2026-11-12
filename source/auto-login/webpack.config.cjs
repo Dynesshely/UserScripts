@@ -13,7 +13,7 @@ module.exports = {
       headers: {
         name: "Auto Login",
         namespace: "http://scriptcat.org/",
-        version: "2026-11-12-3",
+        version: "2026-11-12-4",
         description: "Auto-login on configured sites with locally stored credentials",
         author: "Dynesshely",
         match: ["*", "*://*/*"],
