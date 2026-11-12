@@ -1,5 +1,5 @@
 {
-  "name": "@dynesshely/userscript-disable-pcdn",
+  "name": "userscript-disable-pcdn",
   "version": "2025.4.17",
   "private": true,
   "description": "Disable websites to use PCDN to upload content",
@@ -7,7 +7,6 @@
   "scripts": {
     "build": "webpack"
   },
-  "author": "Dyneeshely",
   "license": "AGPL",
   "devDependencies": {
     "webpack": "^5.101.3",

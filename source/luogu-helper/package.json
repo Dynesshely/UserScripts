@@ -1,9 +1,9 @@
 {
-  "name": "@dynesshely/userscript-luogu-helper",
+  "name": "userscript-luogu-helper",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "洛谷题目页面增强脚本",
+  "description": "Luogu problem list helper userscript",
   "scripts": {
     "build": "webpack"
   },

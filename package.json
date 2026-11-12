@@ -1,8 +1,8 @@
 {
-  "name": "dynesshely-userscripts",
+  "name": "userscripts",
   "private": true,
   "version": "1.0.0",
-  "description": "Dynesshely's userscripts - one independent project per script",
+  "description": "A collection of open-source user scripts - one independent project per script",
   "scripts": {
     "build": "npm run build --prefix source/auto-login && npm run build --prefix source/disable-pcdn && npm run build --prefix source/luogu-helper"
   }

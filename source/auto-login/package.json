@@ -1,8 +1,8 @@
 {
-  "name": "@dynesshely/userscript-auto-login",
+  "name": "userscript-auto-login",
   "version": "0.0.1",
   "private": true,
-  "description": "A script help you to auto login into some websites",
+  "description": "A userscript that fills in credentials and logs in automatically on configured sites",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

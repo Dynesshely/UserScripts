@@ -1,8 +1,8 @@
 # UserScripts
 
-Dynesshely 的个人用户脚本仓库。每个脚本都是 `source/` 下一个独立的小项目，
-通过 [webpack](https://webpack.js.org/) + [webpack-userscript](https://github.com/Jack-Works/webpack-userscript)
-生成带标准 UserScript 头的 `.user.js` 文件。
+一组开源用户脚本合集。每个脚本都是 `source/` 下的一个独立小项目，使用
+[webpack](https://webpack.js.org/) + [webpack-userscript](https://github.com/Jack-Works/webpack-userscript)
+构建出带标准 UserScript 头的 `.user.js` 文件。
 
 ## 脚本列表
 
@@ -40,3 +40,8 @@ source/<slug>/
 ```
 
 `<slug>` 统一使用小写连字符格式。
+
+## 持续集成
+
+推送到 `main` 或提交 PR 时，GitHub Actions 会对每个脚本分别执行 `npm ci` + `npm run build`，
+并检查 `dist/` 中的构建产物与源码一致（构建后工作区无差异），确保仓库里的产物始终可复现。

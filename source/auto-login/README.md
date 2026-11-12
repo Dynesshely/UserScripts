@@ -1,6 +1,6 @@
 # Auto Login
 
-让指定的站点自动填充账号密码并登录。
+让指定站点自动填充账号密码并登录的用户脚本。
 
 - UserScript 名称：`Auto Login`
 - namespace：`http://scriptcat.org/`
@@ -23,7 +23,6 @@
 | `src/selectors.cjs` | 各站点登录表单选择器 |
 | `webpack.config.cjs` | 构建配置与 UserScript 头元数据 |
 | `dist/auto-login.user.js` | 构建产物（安装用） |
-| `dist/backup.js` | 历史备份产物 |
 
 ## 构建
 
