@@ -4,8 +4,10 @@
 
 - UserScript 名称：`Auto Login`
 - namespace：`http://scriptcat.org/`
-- 安装方式：手动导入 ScriptCat（未发布到 GreasyFork，因此没有自动更新源）
+- 安装方式：手动导入 ScriptCat / 其他脚本管理器（本仓库通过 `release` 分支分发）
 - 匹配范围：`*`、`*://*/*`
+- 图标：仓库内自绘资产 [assets/auto-login/logo.png](../../assets/auto-login/logo.png)，
+  `@icon` 通过仓库 raw 链接引入（源文件为同目录下的 `logo.svg`）
 
 ## 功能
 
@@ -19,6 +21,9 @@
   - 启用开关
   - 使用说明与协议勾选
   - 分步示教提示：填写账号 → 确认站点 → 勾选协议 → 保存，步骤会随输入自动推进
+- **示教模式**：填写账号并勾选协议后点击「示教模式」，脚本会在当前页面上依次高亮
+  用户名输入框、密码输入框与登录按钮，说明每一步会自动做什么，并支持「演示填充」
+  写入示例值（不会提交表单），帮助确认站点选择器是否正确。
 - 保存后配置立即持久化；再次打开对应站点的登录页时会自动填充并点击登录按钮。
 - 兼容旧版（GM_config 时期）保存的配置，无需手动迁移。
 
@@ -28,7 +33,7 @@
 | --- | --- |
 | `src/index.cjs` | 入口：读取配置、注册菜单、自动登录流程 |
 | `src/config.cjs` | 配置模型、存储读写与旧配置兼容 |
-| `src/ui.cjs` | 配置面板（Shadow DOM 隔离）、示教步骤、Toast、悬浮按钮 |
+| `src/ui.cjs` | 配置面板（Shadow DOM 隔离）、示教模式、Toast、悬浮按钮 |
 | `src/actions.cjs` | 登录前置动作 |
 | `src/selectors.cjs` | 各站点登录表单选择器 |
 | `webpack.config.cjs` | 构建配置与 UserScript 头元数据 |

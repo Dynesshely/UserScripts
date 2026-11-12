@@ -1,6 +1,10 @@
 "use strict";
 
 const config = require("./config.cjs");
+const selectors = require("./selectors.cjs");
+
+const LOGO_URL =
+  "https://raw.githubusercontent.com/Dynesshely/UserScripts/main/assets/auto-login/logo.png";
 
 const STYLE_TEXT = [
   ":host { all: initial; }",
@@ -31,11 +35,15 @@ const STYLE_TEXT = [
   ".al-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 10px; }",
   ".al-brand { display: flex; align-items: center; gap: 12px; }",
   ".al-logo {",
-  "  width: 40px; height: 40px; border-radius: 12px; flex: none;",
-  "  display: flex; align-items: center; justify-content: center;",
+  "  width: 40px; height: 40px; border-radius: 12px; flex: none; overflow: hidden;",
+  "  display: flex; align-items: center; justify-content: center; position: relative;",
   "  background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff;",
   "  font-weight: 700; font-size: 14px; letter-spacing: .5px;",
   "}",
+  ".al-logo-img { width: 100%; height: 100%; object-fit: cover; display: block; }",
+  ".al-logo-fallback { display: none; }",
+  ".al-logo.is-failed .al-logo-img { display: none; }",
+  ".al-logo.is-failed .al-logo-fallback { display: block; }",
   ".al-title { font-size: 17px; font-weight: 700; line-height: 1.2; }",
   ".al-host { margin-top: 3px; font-size: 12px; color: #64748b; }",
   ".al-close {",
@@ -92,7 +100,7 @@ const STYLE_TEXT = [
   ".al-terms input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: #2563eb; flex: none; }",
   ".al-terms span { font-size: 12px; line-height: 1.6; color: #475569; }",
   ".al-terms.is-invalid { border-color: #dc2626; background: #fef2f2; }",
-  ".al-actions { display: flex; gap: 10px; margin-top: 4px; }",
+  ".al-actions { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }",
   ".al-btn { height: 42px; padding: 0 18px; border-radius: 10px; border: 1px solid transparent; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .12s ease, background .15s ease, opacity .15s ease; }",
   ".al-btn:active { transform: scale(.98); }",
   ".al-btn-primary { flex: 1; background: #2563eb; color: #fff; }",
@@ -102,6 +110,19 @@ const STYLE_TEXT = [
   ".al-hint { margin: 0; min-height: 18px; font-size: 12px; line-height: 1.5; color: #64748b; }",
   ".al-hint.is-error { color: #dc2626; }",
   ".al-hint.is-ok { color: #16a34a; }",
+  ".al-btn-secondary { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }",
+  ".al-btn-secondary:hover { background: #dbeafe; }",
+  ".al-btn-block { width: 100%; margin-top: 2px; }",
+  ".al-btn:disabled { opacity: .45; cursor: not-allowed; }",
+  ".al-tour { position: fixed; inset: 0; pointer-events: none; z-index: 2147483647; }",
+  ".al-tour-hole { position: fixed; display: none; border: 2px solid #2563eb; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(15, 23, 42, .55); pointer-events: none; transition: left .15s ease, top .15s ease, width .15s ease, height .15s ease; }",
+  ".al-tour-bubble { position: fixed; width: 360px; max-width: calc(100vw - 24px); background: #fff; color: #0f172a; border-radius: 14px; padding: 16px 18px; box-shadow: 0 20px 60px rgba(15, 23, 42, .4); pointer-events: auto; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }",
+  ".al-tour-progress { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: #2563eb; text-transform: uppercase; }",
+  ".al-tour-title { margin-top: 6px; font-size: 15px; font-weight: 700; }",
+  ".al-tour-text { margin-top: 6px; font-size: 13px; line-height: 1.6; color: #475569; }",
+  ".al-tour-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }",
+  ".al-tour-actions .al-btn { height: 34px; padding: 0 12px; font-size: 13px; }",
+  ".al-tour-actions .al-btn-primary { flex: 1; }",
   ".al-toast {",
   "  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(8px);",
   "  padding: 10px 16px; border-radius: 10px; background: #0f172a; color: #fff;",
@@ -124,6 +145,10 @@ const STYLE_TEXT = [
   "  .al-btn-ghost:hover { background: #111c31; color: #e2e8f0; }",
   "  .al-step i { border-color: #334155; }",
   "  .al-eye:hover { background: #1e293b; }",
+  "  .al-btn-secondary { background: #172554; color: #93c5fd; border-color: #1e3a8a; }",
+  "  .al-btn-secondary:hover { background: #1e3a8a; }",
+  "  .al-tour-bubble { background: #0f172a; color: #e2e8f0; }",
+  "  .al-tour-text { color: #94a3b8; }",
   "}",
 ].join("\n");
 
@@ -138,6 +163,11 @@ let shadowRoot = null;
 let fabEl = null;
 let layerEl = null;
 let toastTimer = null;
+
+let tourEl = null;
+let tourSteps = [];
+let tourIndex = 0;
+let tourFrame = null;
 
 let currentHostname = "";
 let onSavedCallback = null;
@@ -181,7 +211,7 @@ function panelMarkup() {
     '<section class="al-panel" role="dialog" aria-modal="true" aria-label="Auto Login 配置">',
     '  <header class="al-head">',
     '    <div class="al-brand">',
-    '      <span class="al-logo">AL</span>',
+    '      <span class="al-logo"><img class="al-logo-img" src="' + LOGO_URL + '" alt="" /><span class="al-logo-fallback">AL</span></span>',
     '      <div><div class="al-title">Auto Login</div><div class="al-host"></div></div>',
     "    </div>",
     '    <button class="al-close" type="button" aria-label="关闭">×</button>',
@@ -220,8 +250,9 @@ function panelMarkup() {
     "    </label>",
     '    <div class="al-actions">',
     '      <button class="al-btn al-btn-primary" type="submit">保存配置</button>',
-    '      <button class="al-btn al-btn-ghost" id="al-clear" type="button">清除配置</button>',
+    '      <button class="al-btn al-btn-secondary" id="al-tour" type="button">示教模式</button>',
     "    </div>",
+    '    <button class="al-btn al-btn-ghost al-btn-block" id="al-clear" type="button">清除该站点配置</button>',
     '    <p class="al-hint"></p>',
     "  </form>",
     "</section>",
@@ -236,6 +267,16 @@ function buildPanel() {
 
   const termsText = layerEl.querySelector(".al-terms span");
   termsText.textContent = config.TERMS_TEXT;
+
+  const logoImg = layerEl.querySelector(".al-logo-img");
+  if (logoImg) {
+    logoImg.addEventListener("error", () => {
+      const logo = layerEl.querySelector(".al-logo");
+      if (logo) {
+        logo.classList.add("is-failed");
+      }
+    });
+  }
 
   const typeSelect = layerEl.querySelector("#al-site-type");
   config.SITE_TYPES.forEach((type) => {
@@ -266,6 +307,7 @@ function cachedElements() {
     eye: layerEl.querySelector(".al-eye"),
     save: layerEl.querySelector(".al-btn-primary"),
     clear: layerEl.querySelector("#al-clear"),
+    tour: layerEl.querySelector("#al-tour"),
     close: layerEl.querySelector(".al-close"),
     mask: layerEl.querySelector(".al-mask"),
     hint: layerEl.querySelector(".al-hint"),
@@ -313,6 +355,23 @@ function bindPanelEvents() {
   layerEl.querySelector("form").addEventListener("submit", (event) => {
     event.preventDefault();
     savePanel();
+  });
+
+  el.tour.addEventListener("click", () => {
+    const draft = currentDraft();
+    if (!draft.username || draft.username === config.FIELD_DEFAULTS.username) {
+      showToast("先填写用户名再开始示教");
+      return;
+    }
+    if (!draft.password) {
+      showToast("先填写密码再开始示教");
+      return;
+    }
+    if (!draft.terms_accepted) {
+      showToast("请先勾选使用说明");
+      return;
+    }
+    startTutorial(draft);
   });
 
   el.clear.addEventListener("click", () => {
@@ -566,6 +625,249 @@ function mountSetupFab(hostname, cfg, onOpen) {
   if (fabEl) {
     fabEl.__open = () => onOpen(hostname);
   }
+}
+
+/* ---------- 示教模式 ---------- */
+
+function resolveSubmit(login) {
+  if (!login || !login.Selector) {
+    return null;
+  }
+  if (login.InnerText) {
+    const candidates = document.querySelectorAll(login.Selector);
+    const span = Array.from(candidates).find(
+      (item) => item.textContent.trim() === login.InnerText
+    );
+    if (span) {
+      return span.closest("button") || span;
+    }
+  }
+  return document.querySelector(login.Selector);
+}
+
+function buildTourSteps(cfg) {
+  const site = selectors.selectors.find((item) => item.Name === cfg.site_type);
+  if (!site) {
+    return [];
+  }
+  const s = site.Selector || {};
+
+  const steps = [
+    {
+      title: "第 1 步 · 用户名输入框",
+      text: "脚本会自动定位这个输入框，填入为该站点保存的用户名。",
+      getTarget: () => (s.USERNAME ? document.querySelector(s.USERNAME) : null),
+      demo: "username",
+    },
+    {
+      title: "第 2 步 · 密码输入框",
+      text: "密码同样只保存在本机浏览器存储中，不会上传到任何服务器。",
+      getTarget: () => (s.PASSWORD ? document.querySelector(s.PASSWORD) : null),
+      demo: "password",
+    },
+    {
+      title: "第 3 步 · 登录按钮",
+      text: "用户名和密码都填好后，脚本会点击这个按钮提交登录。",
+      getTarget: () => resolveSubmit(site.Login),
+      demo: null,
+    },
+    {
+      title: "示教结束",
+      text: "保存配置后，再次打开该站点的登录页，脚本会自动完成以上步骤。",
+      getTarget: () => null,
+      demo: null,
+    },
+  ];
+
+  return steps;
+}
+
+function startTutorial(cfg) {
+  const steps = buildTourSteps(cfg);
+  if (!steps.length) {
+    showToast("当前站点类型没有可用的登录表单配置");
+    return;
+  }
+
+  tourSteps = steps;
+  tourIndex = 0;
+  ensureRoot();
+  if (layerEl) {
+    layerEl.hidden = true;
+  }
+  renderTour();
+
+  window.addEventListener("resize", scheduleTourPosition);
+  window.addEventListener("scroll", scheduleTourPosition, true);
+  document.addEventListener("keydown", tourKeyHandler, true);
+}
+
+function endTutorial() {
+  window.removeEventListener("resize", scheduleTourPosition);
+  window.removeEventListener("scroll", scheduleTourPosition, true);
+  document.removeEventListener("keydown", tourKeyHandler, true);
+
+  if (tourFrame) {
+    cancelAnimationFrame(tourFrame);
+    tourFrame = null;
+  }
+  if (tourEl) {
+    tourEl.remove();
+    tourEl = null;
+  }
+
+  tourSteps = [];
+  tourIndex = 0;
+
+  if (layerEl) {
+    layerEl.hidden = false;
+  }
+}
+
+function tourKeyHandler(event) {
+  if (event.key === "Escape" && tourEl) {
+    event.stopPropagation();
+    endTutorial();
+  }
+}
+
+function scheduleTourPosition() {
+  if (tourFrame) {
+    return;
+  }
+  tourFrame = requestAnimationFrame(() => {
+    tourFrame = null;
+    positionTour();
+  });
+}
+
+function renderTour() {
+  ensureRoot();
+  if (!tourEl) {
+    tourEl = document.createElement("div");
+    tourEl.className = "al-tour";
+    shadowRoot.appendChild(tourEl);
+  }
+
+  const step = tourSteps[tourIndex];
+  const isFirst = tourIndex === 0;
+  const isLast = tourIndex === tourSteps.length - 1;
+
+  tourEl.innerHTML = [
+    '<div class="al-tour-hole"></div>',
+    '<div class="al-tour-bubble">',
+    '  <div class="al-tour-progress"></div>',
+    '  <div class="al-tour-title"></div>',
+    '  <div class="al-tour-text"></div>',
+    '  <div class="al-tour-actions">',
+    '    <button class="al-btn al-btn-ghost" data-act="prev" type="button">上一步</button>',
+    step.demo
+      ? '    <button class="al-btn al-btn-secondary" data-act="demo" type="button">演示填充</button>'
+      : "",
+    '    <button class="al-btn al-btn-primary" data-act="next" type="button">' +
+      (isLast ? "完成" : "下一步") +
+      "</button>",
+    '    <button class="al-btn al-btn-ghost" data-act="exit" type="button">退出</button>',
+    "  </div>",
+    "</div>",
+  ].join("");
+
+  tourEl.querySelector(".al-tour-progress").textContent =
+    "示教 " + (tourIndex + 1) + " / " + tourSteps.length;
+  tourEl.querySelector(".al-tour-title").textContent = step.title;
+  tourEl.querySelector(".al-tour-text").textContent = step.text;
+  tourEl.querySelector('[data-act="prev"]').disabled = isFirst;
+
+  const target = step.getTarget();
+  if (target && target.isConnected && target.scrollIntoView) {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  tourEl.querySelectorAll("button[data-act]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.getAttribute("data-act");
+      if (action === "prev") {
+        tourIndex = Math.max(0, tourIndex - 1);
+        renderTour();
+      } else if (action === "next") {
+        if (isLast) {
+          endTutorial();
+        } else {
+          tourIndex += 1;
+          renderTour();
+        }
+      } else if (action === "demo") {
+        fillDemo(step.demo);
+      } else {
+        endTutorial();
+      }
+    });
+  });
+
+  positionTour();
+}
+
+function positionTour() {
+  if (!tourEl || !tourSteps.length) {
+    return;
+  }
+
+  const step = tourSteps[tourIndex];
+  const hole = tourEl.querySelector(".al-tour-hole");
+  const bubble = tourEl.querySelector(".al-tour-bubble");
+  if (!hole || !bubble) {
+    return;
+  }
+
+  const target = step.getTarget && step.getTarget();
+  const rect = target ? target.getBoundingClientRect() : null;
+  const visible = Boolean(rect && rect.width > 0 && rect.height > 0);
+
+  if (visible) {
+    hole.style.display = "block";
+    hole.style.left = rect.left - 6 + "px";
+    hole.style.top = rect.top - 6 + "px";
+    hole.style.width = rect.width + 12 + "px";
+    hole.style.height = rect.height + 12 + "px";
+  } else {
+    hole.style.display = "none";
+  }
+
+  const bubbleWidth = bubble.offsetWidth || 360;
+  const bubbleHeight = bubble.offsetHeight || 170;
+
+  if (visible) {
+    let left = rect.left + rect.width / 2 - bubbleWidth / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - bubbleWidth - 12));
+    let top = rect.bottom + 18;
+    if (top + bubbleHeight > window.innerHeight - 12) {
+      top = rect.top - bubbleHeight - 18;
+    }
+    top = Math.max(12, top);
+    bubble.style.left = left + "px";
+    bubble.style.top = top + "px";
+  } else {
+    bubble.style.left =
+      Math.max(12, window.innerWidth / 2 - bubbleWidth / 2) + "px";
+    bubble.style.top =
+      Math.max(12, window.innerHeight / 2 - bubbleHeight / 2) + "px";
+  }
+}
+
+function fillDemo(kind) {
+  const index = kind === "username" ? 0 : 1;
+  const step = tourSteps[index];
+  const input = step && step.getTarget ? step.getTarget() : null;
+
+  if (!input || !input.isConnected) {
+    showToast("当前页面没有找到该输入框");
+    return;
+  }
+
+  input.value = kind === "username" ? "demo-user" : "demo-password";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  showToast(kind === "username" ? "已演示填入用户名" : "已演示填入密码");
 }
 
 module.exports = {
