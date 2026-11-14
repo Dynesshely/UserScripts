@@ -19,10 +19,12 @@
 
 脚本在 `document` 的捕获阶段监听 `keydown`：
 
-1. 普通 `Enter`：拦截原始事件，向输入框派发一个合成 `Shift+Enter`，
-   让页面用自己的逻辑插入换行；
-2. `Ctrl/Cmd+Enter`：拦截原始事件，向输入框派发一个合成 `Enter`，
-   让页面用自己的逻辑发送消息。
+1. 普通 `Enter`：拦截原始事件，**直接向输入框插入换行**。
+   换行是浏览器的默认编辑行为，合成键盘事件（`isTrusted=false`）不会触发它，
+   所以 textarea 用 `setRangeText` + `input` 事件，contenteditable 用
+   `execCommand("insertLineBreak")`（不可用时回退为插入 `<br>`）；
+2. `Ctrl/Cmd+Enter`：拦截原始事件，向输入框派发一个合成 `Enter`（不带修饰键），
+   交给页面自己的发送逻辑处理。
 
 这样不依赖页面内部的发送按钮或组件实现，也不会改变页面的其他快捷键。
 输入法组合输入期间（`isComposing`）不拦截，避免影响候选词确认。

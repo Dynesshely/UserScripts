@@ -13,7 +13,7 @@ module.exports = {
       headers: {
         name: "DeepSeek: Ctrl+Enter to Send",
         namespace: "com.deepseek.userscript",
-        version: "0.0.1",
+        version: "0.0.2",
         description: "Send messages with Ctrl+Enter and use Enter for line breaks on chat.deepseek.com",
         author: "Dynesshely",
         license: "MIT",

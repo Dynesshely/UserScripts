@@ -7,9 +7,12 @@
  *   - Ctrl/Cmd+Enter  → 发送
  *   - Shift+Enter     → 保持原来的换行行为（不拦截）
  *
- * 实现方式：在 document 捕获阶段拦截原始按键，
- * 再向输入框派发一个等价的合成键盘事件，交给页面自身的发送/换行逻辑处理，
- * 这样不需要依赖页面内部按钮或组件实现。
+ * 实现说明：
+ *   - 换行属于浏览器默认的编辑行为，合成的键盘事件（isTrusted=false）
+ *     不会触发它，因此普通 Enter 直接向输入框插入换行：
+ *     textarea 用 setRangeText，contenteditable 用 execCommand。
+ *   - 发送由页面 JS 处理，因此 Ctrl/Cmd+Enter 通过向输入框派发
+ *     一个合成的普通 Enter 交给页面完成。
  */
 
 (function () {
@@ -46,8 +49,85 @@
     return false;
   }
 
+  function fireInput(target, inputType) {
+    var event;
+    try {
+      event = new InputEvent("input", {
+        bubbles: true,
+        inputType: inputType,
+        data: null,
+      });
+    } catch (error) {
+      event = new Event("input", { bubbles: true });
+    }
+    target.dispatchEvent(event);
+  }
+
+  function insertTextareaNewline(target) {
+    var value = target.value;
+    var start =
+      typeof target.selectionStart === "number"
+        ? target.selectionStart
+        : value.length;
+    var end =
+      typeof target.selectionEnd === "number" ? target.selectionEnd : start;
+
+    target.setRangeText("\n", start, end, "end");
+    fireInput(target, "insertLineBreak");
+  }
+
+  function insertEditableNewline(target) {
+    var inserted = false;
+
+    try {
+      inserted = document.execCommand("insertLineBreak");
+    } catch (error) {
+      inserted = false;
+    }
+
+    if (!inserted) {
+      try {
+        inserted = document.execCommand("insertText", false, "\n");
+      } catch (error) {
+        inserted = false;
+      }
+    }
+
+    if (inserted) {
+      return;
+    }
+
+    // 兜底：手动在选区插入 <br>
+    var selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return;
+    }
+
+    var range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    var br = document.createElement("br");
+    range.insertNode(br);
+
+    range.setStartAfter(br);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    fireInput(target, "insertLineBreak");
+  }
+
+  function insertNewline(target) {
+    if (target.tagName === "TEXTAREA") {
+      insertTextareaNewline(target);
+      return;
+    }
+    if (target.isContentEditable) {
+      insertEditableNewline(target);
+    }
+  }
+
   function defineLegacyKeyCode(event) {
-    // 部分页面仍会读取 keyCode / which，合成事件里手动补上
     Object.defineProperty(event, "keyCode", {
       get: function () {
         return 13;
@@ -60,11 +140,10 @@
     });
   }
 
-  function dispatchSyntheticEnter(target, shiftKey) {
+  function dispatchSyntheticEnter(target) {
     var event = new KeyboardEvent("keydown", {
       key: "Enter",
       code: "Enter",
-      shiftKey: shiftKey,
       bubbles: true,
       cancelable: true,
       composed: true,
@@ -76,7 +155,6 @@
     var keyup = new KeyboardEvent("keyup", {
       key: "Enter",
       code: "Enter",
-      shiftKey: shiftKey,
       bubbles: true,
       cancelable: true,
       composed: true,
@@ -87,12 +165,7 @@
   }
 
   function isPlainEnter(event) {
-    return (
-      !event.shiftKey &&
-      !event.altKey &&
-      !event.ctrlKey &&
-      !event.metaKey
-    );
+    return !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey;
   }
 
   function isSendCombo(event) {
@@ -122,7 +195,7 @@
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      dispatchSyntheticEnter(target, false);
+      dispatchSyntheticEnter(target);
       return;
     }
 
@@ -130,8 +203,7 @@
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      // 用 Shift+Enter 交给页面执行换行，保持页面原有行为
-      dispatchSyntheticEnter(target, true);
+      insertNewline(target);
     }
   }
 
