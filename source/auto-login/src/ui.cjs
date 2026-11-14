@@ -76,10 +76,17 @@ const STYLE_TEXT = [
   ".al-row { display: flex; gap: 12px; }",
   ".al-field-half { flex: 1; min-width: 0; }",
   ".al-select-wrap { position: relative; display: block; }",
-  ".al-select { width: 100%; height: 42px; padding: 0 36px 0 12px; border-radius: 10px; border: 1px solid #dbe2ea; background: #f8fafc; color: #0f172a; font-size: 14px; font-family: inherit; appearance: none; -webkit-appearance: none; outline: none; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }",
-  ".al-select:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, .16); }",
-  ".al-select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #64748b; pointer-events: none; }",
-  ".al-select option { background: #ffffff; color: #0f172a; }",
+  ".al-select { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 42px; padding: 0 36px 0 12px; border-radius: 10px; border: 1px solid #dbe2ea; background: #f8fafc; color: #0f172a; font-size: 14px; font-family: inherit; outline: none; cursor: pointer; user-select: none; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }",
+  ".al-select:focus, .al-select.is-open { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, .16); }",
+  ".al-select-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }",
+  ".al-select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #64748b; pointer-events: none; transition: transform .15s ease; }",
+  ".al-select.is-open .al-select-arrow { transform: translateY(-50%) rotate(180deg); }",
+  ".al-select-menu { position: absolute; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: 6px; list-style: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 16px 40px rgba(15, 23, 42, .18); z-index: 10; max-height: 240px; overflow: auto; }",
+  ".al-select-menu[hidden] { display: none; }",
+  ".al-select-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; border-radius: 8px; font-size: 14px; color: #334155; cursor: pointer; user-select: none; }",
+  ".al-select-option:hover { background: #f1f5f9; color: #0f172a; }",
+  ".al-select-option.is-selected { background: #eff6ff; color: #2563eb; font-weight: 600; }",
+  ".al-select-option.is-selected::after { content: \"✓\"; font-size: 12px; }",
   ".al-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }",
   ".al-switch input { position: absolute; opacity: 0; pointer-events: none; }",
   ".al-switch-track { width: 40px; height: 24px; border-radius: 999px; background: #e2e8f0; position: relative; transition: background .18s ease; flex: none; }",
@@ -139,9 +146,12 @@ const STYLE_TEXT = [
   "  .al-host, .al-label, .al-switch-text, .al-hint { color: #94a3b8; }",
   "  .al-input { background: #111c31; border-color: #24324a; color: #e2e8f0; }",
   "  .al-select { background: #111c31; border-color: #24324a; color: #e2e8f0; }",
-  "  .al-select:focus { background: #0b1526; }",
+  "  .al-select:focus, .al-select.is-open { background: #0b1526; }",
   "  .al-select-arrow { color: #94a3b8; }",
-  "  .al-select option { background: #0f172a; color: #e2e8f0; }",
+  "  .al-select-menu { background: #0f172a; border-color: #24324a; }",
+  "  .al-select-option { color: #cbd5e1; }",
+  "  .al-select-option:hover { background: #1e293b; color: #f1f5f9; }",
+  "  .al-select-option.is-selected { background: #172554; color: #93c5fd; }",
   "  .al-input:focus { background: #0b1526; }",
   "  .al-close:hover { background: #1e293b; color: #e2e8f0; }",
   "  .al-switch-track { background: #334155; }",
@@ -176,6 +186,8 @@ let toastTimer = null;
 
 let currentHostname = "";
 let onSavedCallback = null;
+let selectedSiteType = "1Panel";
+let siteTypeMenuOpen = false;
 
 function ensureRoot() {
   if (hostEl && hostEl.isConnected) {
@@ -237,8 +249,9 @@ function panelMarkup() {
     '      <label class="al-field al-field-half" data-field="site_type">',
     '        <span class="al-label">站点类型</span>',
     '        <span class="al-select-wrap">',
-    '          <select class="al-select" id="al-site-type"></select>',
+    '          <div class="al-select" id="al-site-type" role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" data-value="1Panel"><span class="al-select-value"></span></div>',
     '          <svg class="al-select-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    '          <ul class="al-select-menu" id="al-site-type-menu" role="listbox" hidden></ul>',
     '        </span>',
     "      </label>",
     '      <label class="al-field al-field-half" data-field="site_entrance">',
@@ -276,18 +289,21 @@ function buildPanel() {
   termsText.textContent = config.TERMS_TEXT;
 
 
-  const typeSelect = layerEl.querySelector("#al-site-type");
-  config.SITE_TYPES.forEach((type) => {
-    const option = document.createElement("option");
-    option.value = type;
-    option.textContent = type;
-    typeSelect.appendChild(option);
+  const typeMenu = layerEl.querySelector("#al-site-type-menu");
+  const typeEntries = config.SITE_TYPES.map(function (type) {
+    return { value: type, label: type };
   });
+  typeEntries.push({ value: config.CUSTOM_SITE_TYPE, label: "自定义（本页示教）" });
 
-  const customOption = document.createElement("option");
-  customOption.value = config.CUSTOM_SITE_TYPE;
-  customOption.textContent = "自定义（本页示教）";
-  typeSelect.appendChild(customOption);
+  typeEntries.forEach(function (entry) {
+    const option = document.createElement("li");
+    option.className = "al-select-option";
+    option.setAttribute("role", "option");
+    option.setAttribute("data-value", entry.value);
+    option.setAttribute("aria-selected", "false");
+    option.textContent = entry.label;
+    typeMenu.appendChild(option);
+  });
 
   const toast = document.createElement("div");
   toast.className = "al-toast";
@@ -304,6 +320,11 @@ function cachedElements() {
     username: layerEl.querySelector("#al-username"),
     password: layerEl.querySelector("#al-password"),
     siteType: layerEl.querySelector("#al-site-type"),
+    siteTypeValue: layerEl.querySelector(".al-select-value"),
+    siteTypeMenu: layerEl.querySelector("#al-site-type-menu"),
+    siteTypeOptions: Array.from(
+      layerEl.querySelectorAll("#al-site-type-menu .al-select-option")
+    ),
     entrance: layerEl.querySelector("#al-entrance"),
     enabled: layerEl.querySelector("#al-enabled"),
     terms: layerEl.querySelector("#al-terms"),
@@ -324,6 +345,62 @@ function cachedElements() {
   };
 }
 
+function setSiteType(value) {
+  selectedSiteType = value;
+  const el = cachedElements();
+  let label = value;
+
+  el.siteTypeOptions.forEach(function (option) {
+    const selected = option.getAttribute("data-value") === value;
+    option.classList.toggle("is-selected", selected);
+    option.setAttribute("aria-selected", selected ? "true" : "false");
+    if (selected) {
+      label = option.textContent || value;
+    }
+  });
+
+  el.siteType.setAttribute("data-value", value);
+  if (el.siteTypeValue) {
+    el.siteTypeValue.textContent = label;
+  }
+  refreshSteps();
+}
+
+function openSiteTypeMenu() {
+  const el = cachedElements();
+  if (!el.siteTypeMenu) {
+    return;
+  }
+  el.siteTypeMenu.hidden = false;
+  el.siteType.classList.add("is-open");
+  el.siteType.setAttribute("aria-expanded", "true");
+  siteTypeMenuOpen = true;
+}
+
+function closeSiteTypeMenu() {
+  if (!layerEl) {
+    siteTypeMenuOpen = false;
+    return;
+  }
+  const el = cachedElements();
+  if (el.siteTypeMenu) {
+    el.siteTypeMenu.hidden = true;
+  }
+  if (el.siteType) {
+    el.siteType.classList.remove("is-open");
+    el.siteType.setAttribute("aria-expanded", "false");
+  }
+  siteTypeMenuOpen = false;
+}
+
+function toggleSiteTypeMenu() {
+  if (siteTypeMenuOpen) {
+    closeSiteTypeMenu();
+  } else {
+    openSiteTypeMenu();
+  }
+}
+
 function bindPanelEvents() {
   const el = cachedElements();
 
@@ -334,6 +411,10 @@ function bindPanelEvents() {
     "keydown",
     (event) => {
       if (event.key === "Escape" && layerEl && !layerEl.hidden) {
+        if (siteTypeMenuOpen) {
+          closeSiteTypeMenu();
+          return;
+        }
         closePanel();
       }
     },
@@ -351,9 +432,53 @@ function bindPanelEvents() {
   el.username.addEventListener("input", refresh);
   el.password.addEventListener("input", refresh);
   el.terms.addEventListener("change", refresh);
-  el.siteType.addEventListener("change", refresh);
   el.enabled.addEventListener("change", refresh);
   el.entrance.addEventListener("input", refresh);
+
+  el.siteType.addEventListener("click", function (event) {
+    event.stopPropagation();
+    toggleSiteTypeMenu();
+  });
+
+  el.siteType.addEventListener("keydown", function (event) {
+    if (
+      event.key === "Enter" ||
+      event.key === " " ||
+      event.key === "ArrowDown"
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      openSiteTypeMenu();
+    } else if (event.key === "Escape") {
+      event.stopPropagation();
+      closeSiteTypeMenu();
+    }
+  });
+
+  el.siteTypeOptions.forEach(function (option) {
+    option.addEventListener("click", function (event) {
+      event.stopPropagation();
+      setSiteType(option.getAttribute("data-value"));
+      closeSiteTypeMenu();
+    });
+  });
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      if (!siteTypeMenuOpen) {
+        return;
+      }
+      const path = event.composedPath ? event.composedPath() : [];
+      const inside = path.some(function (node) {
+        return node === el.siteType || node === el.siteTypeMenu;
+      });
+      if (!inside) {
+        closeSiteTypeMenu();
+      }
+    },
+    true
+  );
 
   layerEl.querySelector("form").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -386,7 +511,7 @@ function currentDraft() {
   return {
     username: el.username.value.trim(),
     password: el.password.value,
-    site_type: el.siteType.value,
+    site_type: el.siteType.getAttribute("data-value") || selectedSiteType,
     site_enabled: el.enabled.checked,
     site_entrance: el.entrance.value.trim(),
     terms_accepted: el.terms.checked,
@@ -518,7 +643,7 @@ function applyConfigToPanel(cfg) {
   const el = cachedElements();
   el.username.value = cfg.username === config.FIELD_DEFAULTS.username ? "" : cfg.username;
   el.password.value = cfg.password === config.FIELD_DEFAULTS.password ? "" : cfg.password;
-  el.siteType.value = cfg.site_type;
+  setSiteType(cfg.site_type);
   el.entrance.value = cfg.site_entrance || "";
 
   const configured = Boolean(
@@ -570,6 +695,9 @@ function openPanel(hostname, cfg, onSaved) {
 function closePanel() {
   if (!layerEl) {
     return;
+  }
+  if (siteTypeMenuOpen) {
+    closeSiteTypeMenu();
   }
   layerEl.hidden = true;
 }
@@ -631,7 +759,7 @@ function startInstruct() {
         layerEl.hidden = false;
       }
       const el = cachedElements();
-      el.siteType.value = config.CUSTOM_SITE_TYPE;
+      setSiteType(config.CUSTOM_SITE_TYPE);
       el.hint.textContent =
         "示教完成：已记录本站点的登录步骤，站点类型已切换为「自定义（本页示教）」。填写账号后保存即可。";
       el.hint.className = "al-hint is-ok";
