@@ -106,6 +106,7 @@ release 分支上的文件**没有变化**时不会产生空提交（workflow �
 | auto-login | `https://raw.githubusercontent.com/Dynesshely/UserScripts/release/auto-login.user.js` |
 | disable-pcdn | `https://raw.githubusercontent.com/Dynesshely/UserScripts/release/disable-pcdn.user.js` |
 | luogu-helper | `https://raw.githubusercontent.com/Dynesshely/UserScripts/release/luogu-helper.user.js` |
+| deepseek-ctrl-enter | `https://raw.githubusercontent.com/Dynesshely/UserScripts/release/deepseek-ctrl-enter.user.js` |
 
 必须使用 **raw URL**（`raw.githubusercontent.com`），不能填 `github.com/.../blob/...` 页面地址。
 

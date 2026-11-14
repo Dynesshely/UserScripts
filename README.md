@@ -11,6 +11,7 @@
 | [source/auto-login](source/auto-login) | Auto Login | 手动安装（ScriptCat） | - |
 | [source/disable-pcdn](source/disable-pcdn) | Disable Websites' PCDN | [GreasyFork 491421](https://greasyfork.org/zh-CN/scripts/491421) | AGPL |
 | [source/luogu-helper](source/luogu-helper) | 洛谷助手 | [GreasyFork 581027](https://greasyfork.org/zh-CN/scripts/581027) | MIT |
+| [source/deepseek-ctrl-enter](source/deepseek-ctrl-enter) | DeepSeek: Ctrl+Enter to Send | 待发布（可从 release 分支安装） | MIT |
 
 ## 构建
 

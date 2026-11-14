@@ -1,0 +1,16 @@
+{
+  "name": "userscript-deepseek-ctrl-enter",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Swap Enter and Ctrl+Enter behavior on chat.deepseek.com",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "webpack-userscript": "^3.2.3"
+  }
+}

@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "description": "A collection of open-source user scripts - one independent project per script",
   "scripts": {
-    "build": "npm run build --prefix source/auto-login && npm run build --prefix source/disable-pcdn && npm run build --prefix source/luogu-helper"
+    "build": "npm run build --prefix source/auto-login && npm run build --prefix source/disable-pcdn && npm run build --prefix source/luogu-helper && npm run build --prefix source/deepseek-ctrl-enter"
   }
 }
