@@ -104,6 +104,16 @@ function autoLoginCustom(cfg) {
     }
 
     const step = customSite.steps[index];
+
+    if (step.action === "wait") {
+      const waitMs = typeof step.ms === "number" ? step.ms : 1000;
+      console.log("⏳ 等待 " + waitMs + " 毫秒");
+      index += 1;
+      stepStartedAt = Date.now();
+      setTimeout(run, waitMs);
+      return;
+    }
+
     const element = document.querySelector(step.selector);
 
     if (!element) {

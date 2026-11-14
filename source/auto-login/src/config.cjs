@@ -159,15 +159,27 @@ function normalizeCustomSite(store) {
       return;
     }
 
+    if (item.action === "wait") {
+      const ms = Number(item.ms);
+      if (Number.isFinite(ms) && ms > 0) {
+        steps.push({
+          action: "wait",
+          ms: Math.min(Math.round(ms), 60000),
+        });
+      }
+      return;
+    }
+
     const selector = typeof item.selector === "string" ? item.selector : "";
     if (!selector) {
       return;
     }
 
+    const label = typeof item.label === "string" ? item.label.slice(0, 120) : "";
     if (item.action === "fill" && (item.field === "username" || item.field === "password")) {
-      steps.push({ action: "fill", field: item.field, selector: selector });
+      steps.push({ action: "fill", field: item.field, selector: selector, label: label });
     } else if (item.action === "click") {
-      steps.push({ action: "click", selector: selector });
+      steps.push({ action: "click", selector: selector, label: label });
     }
   });
 

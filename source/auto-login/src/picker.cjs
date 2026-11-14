@@ -3,43 +3,23 @@
 const config = require("./config.cjs");
 
 /**
- * 示教拾取器
+ * 示教拾取器（动作序列编辑器）
  *
- * 让用户直接在页面上点击元素，教会脚本当前站点的登录表单结构：
- *   1. 用户名输入框
- *   2. （可选）输入用户名后需要点击的「下一步」按钮
- *   3. 密码输入框
- *   4. 登录按钮
+ * 用户通过组合以下操作来教脚本处理当前站点的登录流程：
+ *   - 填入用户名（选择页面元素）
+ *   - 填入密码（选择页面元素）
+ *   - 点击控件（选择页面元素）
+ *   - 等待一定时间（不需要元素）
  *
- * 结果保存为该 hostname 下的自定义站点类型，登录时交给自定义执行器回放。
+ * 每一步都会保存到自定义站点配置里，登录时按顺序回放。
  */
 
-const STEP_DEFS = [
-  {
-    key: "username",
-    title: "选择用户名输入框",
-    text: "把鼠标移到页面上的用户名输入框上，点击选中它。",
-    skippable: false,
-  },
-  {
-    key: "next",
-    title: "选择「下一步」按钮（可选）",
-    text: "如果先填用户名、点一个按钮后才会出现密码框，请点击那个按钮；没有这样的按钮就点「跳过」。",
-    skippable: true,
-  },
-  {
-    key: "password",
-    title: "选择密码输入框",
-    text: "点击页面上的密码输入框。",
-    skippable: false,
-  },
-  {
-    key: "login",
-    title: "选择登录按钮",
-    text: "点击提交登录的按钮（两步式站点通常是最后出现的那个提交按钮）。",
-    skippable: false,
-  },
-];
+const ACTION_DEFS = {
+  "fill:username": { label: "填入用户名", needsElement: true },
+  "fill:password": { label: "填入密码", needsElement: true },
+  click: { label: "点击控件", needsElement: true },
+  wait: { label: "等待一定时间", needsElement: false },
+};
 
 let state = null;
 
@@ -162,6 +142,14 @@ function describeElement(element) {
   return label;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function isOwnUi(event) {
   const path = event.composedPath ? event.composedPath() : [];
   return path.indexOf(state.hostEl) >= 0;
@@ -180,6 +168,19 @@ function isPickable(element) {
   return true;
 }
 
+function stepText(step) {
+  if (step.action === "wait") {
+    return "等待 " + (step.ms / 1000) + " 秒";
+  }
+  const base =
+    step.action === "fill"
+      ? step.field === "username"
+        ? "填入用户名"
+        : "填入密码"
+      : "点击控件";
+  return step.label ? base + " · " + step.label : base;
+}
+
 function startPicker(options) {
   if (state) {
     return;
@@ -191,20 +192,22 @@ function startPicker(options) {
     hostname: options.hostname,
     onDone: options.onDone,
     onCancel: options.onCancel,
-    stepIndex: 0,
-    actionsByStep: [undefined, undefined, undefined, undefined],
-    finished: false,
+    mode: "edit",
+    pickingAction: null,
+    steps: [],
+    waitSeconds: 1,
     root: null,
     hole: null,
     label: null,
     bar: null,
     raf: null,
+    lastEvent: null,
     listeners: [],
   };
 
   buildUi();
   bindListeners();
-  renderBar();
+  render();
 }
 
 function buildUi() {
@@ -213,15 +216,7 @@ function buildUi() {
   root.innerHTML = [
     '<div class="al-pick-hole"></div>',
     '<div class="al-pick-label"></div>',
-    '<div class="al-pick-bar">',
-    '  <div class="al-pick-head">',
-    '    <span class="al-pick-badge">示教模式</span>',
-    '    <span class="al-pick-step"></span>',
-    "  </div>",
-    '  <div class="al-pick-title"></div>',
-    '  <div class="al-pick-text"></div>',
-    '  <div class="al-pick-actions"></div>',
-    "</div>",
+    '<div class="al-pick-bar"></div>',
   ].join("");
 
   state.shadowRoot.appendChild(root);
@@ -233,20 +228,31 @@ function buildUi() {
 
 function bindListeners() {
   const onMove = function (event) {
-    scheduleHighlight(event);
+    if (state && state.mode === "picking") {
+      scheduleHighlight(event);
+    }
   };
   const onClick = function (event) {
     handleClick(event);
   };
   const onKey = function (event) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
+    if (!state || event.key !== "Escape") {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (state.mode === "picking") {
+      state.mode = "edit";
+      state.pickingAction = null;
+      render();
+    } else {
       cancel();
     }
   };
   const onScroll = function () {
-    scheduleHighlight(null);
+    if (state && state.mode === "picking") {
+      scheduleHighlight(null);
+    }
   };
 
   document.addEventListener("mousemove", onMove, true);
@@ -275,7 +281,7 @@ function bindListeners() {
 }
 
 function scheduleHighlight(event) {
-  if (!state || state.finished) {
+  if (!state || state.mode !== "picking") {
     return;
   }
   state.lastEvent = event;
@@ -283,6 +289,9 @@ function scheduleHighlight(event) {
     return;
   }
   state.raf = requestAnimationFrame(function () {
+    if (!state) {
+      return;
+    }
     state.raf = null;
     updateHighlight();
   });
@@ -301,7 +310,7 @@ function updateHighlight() {
     return;
   }
 
-  const target = currentHoverTarget();
+  const target = state.mode === "picking" ? currentHoverTarget() : null;
   if (!target) {
     state.hole.style.display = "none";
     state.label.style.display = "none";
@@ -322,10 +331,9 @@ function updateHighlight() {
 }
 
 function handleClick(event) {
-  if (!state) {
+  if (!state || state.mode !== "picking") {
     return;
   }
-
   if (isOwnUi(event)) {
     return;
   }
@@ -339,153 +347,232 @@ function handleClick(event) {
   event.stopPropagation();
   event.stopImmediatePropagation();
 
-  if (state.finished) {
-    return;
-  }
-
-  record(target);
+  pickElement(target);
 }
 
-function record(element) {
-  const step = STEP_DEFS[state.stepIndex];
+function pickElement(element) {
   const selector = buildSelector(element);
-
   if (!selector) {
-    setText("无法为这个元素生成稳定的选择器，请换一个元素或点击更具体的输入框 / 按钮。");
+    setStatus("无法为这个元素生成稳定的选择器，请换一个元素或换更具体的输入框 / 按钮。", true);
     return;
   }
 
-  if (step.key === "username") {
-    state.actionsByStep[state.stepIndex] = {
-      action: "fill",
-      field: "username",
-      selector: selector,
-    };
-  } else if (step.key === "password") {
-    state.actionsByStep[state.stepIndex] = {
-      action: "fill",
-      field: "password",
-      selector: selector,
-    };
+  const actionKey = state.pickingAction;
+  const label = describeElement(element);
+
+  if (actionKey === "fill:username") {
+    state.steps.push({ action: "fill", field: "username", selector: selector, label: label });
+  } else if (actionKey === "fill:password") {
+    state.steps.push({ action: "fill", field: "password", selector: selector, label: label });
   } else {
-    state.actionsByStep[state.stepIndex] = {
-      action: "click",
-      selector: selector,
-    };
+    state.steps.push({ action: "click", selector: selector, label: label });
   }
 
-  state.stepIndex += 1;
-  advance();
+  state.mode = "edit";
+  state.pickingAction = null;
+  render();
 }
 
-function skip() {
-  const step = STEP_DEFS[state.stepIndex];
-  if (!step || !step.skippable) {
+function setStatus(message, isError) {
+  const text = state && state.bar ? state.bar.querySelector(".al-pick-text") : null;
+  if (text) {
+    text.textContent = message;
+    text.className = "al-pick-text" + (isError ? " is-error" : "");
+  }
+}
+
+function render() {
+  if (!state) {
     return;
   }
-  state.actionsByStep[state.stepIndex] = null;
-  state.stepIndex += 1;
-  advance();
-}
-
-function back() {
-  if (state.stepIndex <= 0) {
-    return;
+  if (state.mode === "picking") {
+    renderPicking();
+  } else {
+    renderEditor();
   }
-  state.stepIndex -= 1;
-  state.actionsByStep[state.stepIndex] = undefined;
-  renderBar();
+  bindBarButtons();
 }
 
-function advance() {
-  if (state.stepIndex >= STEP_DEFS.length) {
-    state.finished = true;
-    renderBar();
-    return;
-  }
-  renderBar();
+function renderEditor() {
+  const bar = state.bar;
+  const stepItems = state.steps.map(function (step, index) {
+    return [
+      '<li class="al-pick-step-item">',
+      '  <span class="al-pick-step-no">' + (index + 1) + "</span>",
+      '  <span class="al-pick-step-text">' + escapeHtml(stepText(step)) + "</span>",
+      '  <span class="al-pick-step-ops">',
+      '    <button type="button" class="al-pick-step-op" data-act="up" data-index="' + index + '" title="上移">↑</button>',
+      '    <button type="button" class="al-pick-step-op" data-act="down" data-index="' + index + '" title="下移">↓</button>',
+      '    <button type="button" class="al-pick-step-op is-danger" data-act="del" data-index="' + index + '" title="删除">×</button>',
+      "  </span>",
+      "</li>",
+    ].join("");
+  });
+
+  bar.innerHTML = [
+    '<div class="al-pick-head">',
+    '  <span class="al-pick-badge">示教模式</span>',
+    '  <span class="al-pick-step">已添加 ' + state.steps.length + " 步</span>",
+    "</div>",
+    '<div class="al-pick-title">组合登录步骤</div>',
+    '<div class="al-pick-text">按顺序添加操作。需要选择元素的步骤会先切换到页面拾取；「等待」用于密码框延迟出现等动态加载场景。</div>',
+    '<ul class="al-pick-steps">',
+    stepItems.length
+      ? stepItems.join("")
+      : '<li class="al-pick-steps-empty">还没有添加步骤</li>',
+    "</ul>",
+    '<div class="al-pick-actions">',
+    '  <button type="button" class="al-btn al-btn-secondary" data-act="pick-username">填入用户名</button>',
+    '  <button type="button" class="al-btn al-btn-secondary" data-act="pick-password">填入密码</button>',
+    '  <button type="button" class="al-btn al-btn-secondary" data-act="pick-click">点击控件</button>',
+    '  <button type="button" class="al-btn al-btn-secondary" data-act="wait">等待</button>',
+    "</div>",
+    '<div class="al-pick-wait-row" hidden>',
+    "  <span>等待</span>",
+    '  <input type="number" class="al-pick-wait-input" min="0.1" max="30" step="0.1" value="' + state.waitSeconds + '" />',
+    "  <span>秒</span>",
+    '  <button type="button" class="al-btn al-btn-primary" data-act="add-wait">添加</button>',
+    '  <button type="button" class="al-btn al-btn-ghost" data-act="cancel-wait">取消</button>',
+    "</div>",
+    '<div class="al-pick-actions">',
+    '  <button type="button" class="al-btn al-btn-primary" data-act="save">保存示教结果</button>',
+    '  <button type="button" class="al-btn al-btn-ghost" data-act="restart">重来</button>',
+    '  <button type="button" class="al-btn al-btn-ghost" data-act="exit">退出</button>',
+    "</div>",
+  ].join("");
 }
 
-function renderBar() {
+function renderPicking() {
+  const actionKey = state.pickingAction;
+  const label = ACTION_DEFS[actionKey] ? ACTION_DEFS[actionKey].label : "选择元素";
+
+  state.bar.innerHTML = [
+    '<div class="al-pick-head">',
+    '  <span class="al-pick-badge">示教模式</span>',
+    '  <span class="al-pick-step">拾取元素</span>',
+    "</div>",
+    '<div class="al-pick-title">' + escapeHtml(label) + "</div>",
+    '<div class="al-pick-text">把鼠标移到页面上的目标元素上，点击它来选中。</div>',
+    '<div class="al-pick-actions">',
+    '  <button type="button" class="al-btn al-btn-ghost" data-act="cancel-pick">取消拾取</button>',
+    "</div>",
+  ].join("");
+}
+
+function bindBarButtons() {
   if (!state || !state.bar) {
     return;
   }
 
-  const finished = state.finished;
-  const step = STEP_DEFS[Math.min(state.stepIndex, STEP_DEFS.length - 1)];
-
-  state.root.querySelector(".al-pick-step").textContent = finished
-    ? "已完成"
-    : "第 " + (state.stepIndex + 1) + " / " + STEP_DEFS.length + " 步";
-  state.root.querySelector(".al-pick-title").textContent = finished
-    ? "示教完成"
-    : step.title;
-  state.root.querySelector(".al-pick-text").textContent = finished
-    ? "脚本已记录本页的登录流程，保存后即可用于自动登录。"
-    : step.text;
-
-  const actions = state.root.querySelector(".al-pick-actions");
-  actions.innerHTML = "";
-
-  if (finished) {
-    addButton(actions, "保存示教结果", "primary", save);
-    addButton(actions, "重新示教", "ghost", restart);
-    addButton(actions, "退出", "ghost", cancel);
-  } else {
-    if (state.stepIndex > 0) {
-      addButton(actions, "上一步", "ghost", back);
-    }
-    if (step.skippable) {
-      addButton(actions, "跳过这一步", "secondary", skip);
-    }
-    addButton(actions, "退出示教", "ghost", cancel);
-  }
-
-  state.hole.style.display = "none";
-  state.label.style.display = "none";
-}
-
-function addButton(container, text, kind, handler) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className =
-    "al-btn " +
-    (kind === "primary"
-      ? "al-btn-primary"
-      : kind === "secondary"
-      ? "al-btn-secondary"
-      : "al-btn-ghost");
-  button.textContent = text;
-  button.addEventListener("click", function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    handler();
+  state.bar.querySelectorAll("button[data-act]").forEach(function (button) {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      handleAction(button.getAttribute("data-act"), Number(button.getAttribute("data-index")));
+    });
   });
-  container.appendChild(button);
 }
 
-function setText(message) {
-  if (state) {
-    state.root.querySelector(".al-pick-text").textContent = message;
+function handleAction(action, index) {
+  if (!state) {
+    return;
   }
-}
 
-function restart() {
-  state.stepIndex = 0;
-  state.actionsByStep = [undefined, undefined, undefined, undefined];
-  state.finished = false;
-  renderBar();
+  if (action === "pick-username") {
+    state.mode = "picking";
+    state.pickingAction = "fill:username";
+    render();
+    return;
+  }
+  if (action === "pick-password") {
+    state.mode = "picking";
+    state.pickingAction = "fill:password";
+    render();
+    return;
+  }
+  if (action === "pick-click") {
+    state.mode = "picking";
+    state.pickingAction = "click";
+    render();
+    return;
+  }
+  if (action === "wait") {
+    const row = state.bar.querySelector(".al-pick-wait-row");
+    if (row) {
+      row.hidden = false;
+      const input = row.querySelector(".al-pick-wait-input");
+      if (input) {
+        input.focus();
+      }
+    }
+    return;
+  }
+  if (action === "add-wait") {
+    const input = state.bar.querySelector(".al-pick-wait-input");
+    const seconds = input ? Number(input.value) : 1;
+    const ms = Math.min(Math.max(Math.round((Number.isFinite(seconds) ? seconds : 1) * 1000), 100), 60000);
+    state.waitSeconds = ms / 1000;
+    state.steps.push({ action: "wait", ms: ms });
+    render();
+    return;
+  }
+  if (action === "cancel-wait") {
+    const row = state.bar.querySelector(".al-pick-wait-row");
+    if (row) {
+      row.hidden = true;
+    }
+    return;
+  }
+  if (action === "del") {
+    state.steps.splice(index, 1);
+    render();
+    return;
+  }
+  if (action === "up" && index > 0) {
+    const item = state.steps[index];
+    state.steps[index] = state.steps[index - 1];
+    state.steps[index - 1] = item;
+    render();
+    return;
+  }
+  if (action === "down" && index < state.steps.length - 1) {
+    const item = state.steps[index];
+    state.steps[index] = state.steps[index + 1];
+    state.steps[index + 1] = item;
+    render();
+    return;
+  }
+  if (action === "cancel-pick") {
+    state.mode = "edit";
+    state.pickingAction = null;
+    render();
+    return;
+  }
+  if (action === "restart") {
+    state.steps = [];
+    render();
+    return;
+  }
+  if (action === "save") {
+    save();
+    return;
+  }
+  if (action === "exit") {
+    cancel();
+  }
 }
 
 function save() {
-  const steps = state.actionsByStep.filter(Boolean);
   const store = config.saveCustomSite(state.hostname, {
-    steps: steps,
+    steps: state.steps,
     updatedAt: Date.now(),
   });
 
   if (!store) {
-    setText("示教数据不完整：至少需要用户名、密码和登录按钮各一步。");
+    setStatus(
+      "步骤不完整：至少需要「填入用户名」「填入密码」「点击控件」各一步。",
+      true
+    );
     return;
   }
 
