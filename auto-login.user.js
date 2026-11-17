@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Auto Login
 // @description Auto-login on configured sites with locally stored credentials
-// @version     2026-11-12-6
+// @version     2026-11-12-7
 // @author      Dynesshely
 // @match       *
 // @match       *://*/*
@@ -11,6 +11,7 @@
 // @grant       GM.setValue
 // @grant       GM_registerMenuCommand
 // @icon        https://raw.githubusercontent.com/Dynesshely/UserScripts/main/assets/auto-login/logo.png
+// @license     MIT
 // @namespace   http://scriptcat.org/
 // @run-at      document-idle
 // ==/UserScript==
