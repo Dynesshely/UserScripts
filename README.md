@@ -12,10 +12,10 @@
 
 | 目录 | 脚本名 | 安装/更新源 | 许可 |
 | --- | --- | --- | --- |
-| [source/auto-login](source/auto-login) | Auto Login | 手动安装（ScriptCat） | - |
-| [source/disable-pcdn](source/disable-pcdn) | Disable Websites' PCDN | [GreasyFork 491421](https://greasyfork.org/zh-CN/scripts/491421) | AGPL |
+| [source/auto-login](source/auto-login) | Auto Login | release 分支 raw / 手动导入 ScriptCat | ISC |
+| [source/disable-pcdn](source/disable-pcdn) | Disable Websites' PCDN | [GreasyFork 491421](https://greasyfork.org/zh-CN/scripts/491421) | MIT |
 | [source/luogu-helper](source/luogu-helper) | 洛谷助手 | [GreasyFork 581027](https://greasyfork.org/zh-CN/scripts/581027) | MIT |
-| [source/deepseek-ctrl-enter](source/deepseek-ctrl-enter) | DeepSeek: Ctrl+Enter to Send | 待发布（可从 release 分支安装） | MIT |
+| [source/deepseek-ctrl-enter](source/deepseek-ctrl-enter) | DeepSeek: Ctrl+Enter to Send | release 分支 raw（GreasyFork 待发布） | MIT |
 
 ## 构建
 
@@ -32,6 +32,39 @@ npm run build
 ```powershell
 npm run build
 ```
+
+## 脚本功能
+
+### Auto Login
+
+[source/auto-login](source/auto-login)
+
+在浏览器里保存各站点的账号密码，匹配到登录页时自动填充并提交。
+内置 1Panel、JumpServer、DataEase、Portainer、OMV、TrueNAS 等站点类型；
+未内置的站点可以通过「示教模式」在页面上拾取元素，自由组合「填入用户名 / 填入密码 /
+点击控件 / 等待」等操作，支持两步式登录（先填用户名 → 点下一步 → 等待密码框出现 → 填密码 → 登录）。
+
+### Disable Websites' PCDN
+
+[source/disable-pcdn](source/disable-pcdn)
+
+阻止网站把访问者当成 PCDN 上传节点：删除页面中的 WebRTC / DataChannel 全局构造器
+（`RTCPeerConnection` 等），让依赖 WebRTC 的 PCDN SDK 无法建立点对点连接。
+当前匹配 `https://*.bilibili.com/*`。
+
+### 洛谷助手
+
+[source/luogu-helper](source/luogu-helper)
+
+洛谷题目列表页增强：右下角悬浮按钮，点开后按「已通过 / 未通过 / 未做」分组统计题号，
+支持一键复制题号；仅在 `/problem/list` 页面显示，兼容洛谷的 SPA 路由切换。
+
+### DeepSeek: Ctrl+Enter to Send
+
+[source/deepseek-ctrl-enter](source/deepseek-ctrl-enter)
+
+把 chat.deepseek.com 的发送快捷键从 Enter 改为 Ctrl + Enter（macOS 上为 Cmd + Enter），
+把换行还给 Enter；Shift + Enter 保持原有换行行为。输入法组合输入期间与搜索框不受影响。
 
 ## 目录约定
 
@@ -64,3 +97,4 @@ source/<slug>/
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/auto-login.user.js>
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/disable-pcdn.user.js>
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/luogu-helper.user.js>
+- <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/deepseek-ctrl-enter.user.js>

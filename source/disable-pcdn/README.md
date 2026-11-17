@@ -43,4 +43,4 @@ npm run build
 
 ## 许可
 
-AGPL
+MIT · 作者：Dynesshely
