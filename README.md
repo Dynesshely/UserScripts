@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="assets/banner.svg" alt="UserScripts — 开源用户脚本合集" width="100%" />
+</div>
+
 # UserScripts
 
 一组开源用户脚本合集。每个脚本都是 `source/` 下的一个独立小项目，使用
