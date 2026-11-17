@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name        Isometric Contributions
 // @description Render GitHub contribution graphs as an isometric 3D view with 2D/3D/Both toggle
-// @version     0.0.3
+// @version     0.0.4
 // @author      Dynesshely
 // @match       https://github.com/*
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_addStyle
+// @homepageURL https://github.com/jasonlong/isometric-contributions
 // @icon        https://github.com/favicon.ico
 // @license     MIT
 // @namespace   https://github.com/Dynesshely/UserScripts
