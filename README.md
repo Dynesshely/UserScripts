@@ -105,9 +105,9 @@ source/<slug>/
 
 ## 许可
 
-本仓库中的内容以 MIT 许可发布，详见 [LICENSE](LICENSE)（标准 MIT 文本，便于 GitHub 自动识别）。
+本仓库中的内容以 MIT 许可发布，详见 [LICENSE](LICENSE)。
 
 每个脚本按各自独立的许可分发：以各脚本目录中的 `LICENSE` 文件（如有）或脚本头部的
-`@license` 声明为准（当前所有脚本均为 MIT）。仓库级 `LICENSE` 仅适用于仓库中未明确
+`@license` 声明为准。仓库级 `LICENSE` 仅适用于仓库中未明确
 说明许可的内容，例如根 README、`docs/` 文档、`assets/` 下的 banner 与功能图示、
 以及仓库配置文件。
