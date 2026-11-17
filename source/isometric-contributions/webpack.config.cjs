@@ -13,7 +13,7 @@ module.exports = {
       headers: {
         name: "Isometric Contributions",
         namespace: "https://github.com/Dynesshely/UserScripts",
-        version: "0.0.1",
+        version: "0.0.2",
         description:
           "Render GitHub contribution graphs as an isometric 3D view with 2D/3D/Both toggle",
         author: "Dynesshely",
