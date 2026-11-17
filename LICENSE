@@ -19,22 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-------------------------------------------------------------------------
-
-Scoping notice / 适用范围说明
-
-本仓库中的每个用户脚本项目（source/<slug>/）都按照其各自独立的许可进行分发，
-以该脚本目录中的 LICENSE 文件（如有）或脚本头部中的 @license 声明为准。
-当前所有脚本均为 MIT 许可；具体作者、来源与第三方依赖的许可见各脚本的 README、
-webpack 配置中的 @author / @license 字段，以及打包产物旁的 LICENSE.txt。
-
-仓库级 MIT 许可（本文件）仅适用于仓库中未明确说明许可的内容，
-例如根 README、docs/ 文档、assets/ 下的 banner 与功能图示、仓库配置文件等。
-
-The scripts under source/<slug>/ are distributed under their own respective
-licenses: see the LICENSE file in each script directory (if any) or the
-@license field in the generated userscript header. The repository-level MIT
-license (this file) applies only to content that does not carry its own
-explicit license statement, such as the root README, docs, assets and
-repository configuration files.
