@@ -42,12 +42,13 @@ jobs:
             source/disable-pcdn/package-lock.json
             source/luogu-helper/package-lock.json
             source/deepseek-ctrl-enter/package-lock.json
+            source/isometric-contributions/package-lock.json
 
       - name: Install dependencies and build
         run: |
           set -euo pipefail
           # 依次构建三个脚本：每个脚本目录内独立 npm ci + npm run build
-          for project in auto-login disable-pcdn luogu-helper deepseek-ctrl-enter; do
+          for project in auto-login disable-pcdn luogu-helper deepseek-ctrl-enter isometric-contributions; do
             echo "::group::构建 source/${project}"
             (
               cd "source/${project}"
@@ -76,6 +77,7 @@ jobs:
           cp source/disable-pcdn/dist/disable-pcdn.user.js "${STAGING_DIR}/"
           cp source/luogu-helper/dist/luogu-helper.user.js "${STAGING_DIR}/"
           cp source/deepseek-ctrl-enter/dist/deepseek-ctrl-enter.user.js "${STAGING_DIR}/"
+          cp source/isometric-contributions/dist/isometric-contributions.user.js "${STAGING_DIR}/"
           ls -l "${STAGING_DIR}"
 
       - name: Publish to release branch
@@ -134,4 +136,5 @@ jobs:
             source/disable-pcdn/dist/disable-pcdn.user.js
             source/luogu-helper/dist/luogu-helper.user.js
             source/deepseek-ctrl-enter/dist/deepseek-ctrl-enter.user.js
+            source/isometric-contributions/dist/isometric-contributions.user.js
           fail_on_unmatched_files: true

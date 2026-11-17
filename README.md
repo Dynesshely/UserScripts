@@ -16,6 +16,7 @@
 | [source/disable-pcdn](source/disable-pcdn) | Disable Websites' PCDN | [GreasyFork 491421](https://greasyfork.org/zh-CN/scripts/491421) | MIT |
 | [source/luogu-helper](source/luogu-helper) | 洛谷助手 | [GreasyFork 581027](https://greasyfork.org/zh-CN/scripts/581027) | MIT |
 | [source/deepseek-ctrl-enter](source/deepseek-ctrl-enter) | DeepSeek: Ctrl+Enter to Send | release 分支 raw（GreasyFork 待发布） | MIT |
+| [source/isometric-contributions](source/isometric-contributions) | Isometric Contributions | release 分支 raw | MIT |
 
 ## 构建
 
@@ -59,6 +60,12 @@ npm run build
 
 源码：[source/deepseek-ctrl-enter](source/deepseek-ctrl-enter)
 
+### Isometric Contributions
+
+<img src="assets/functions/isometric-contributions.svg" alt="Isometric Contributions 功能说明" width="100%" />
+
+源码：[source/isometric-contributions](source/isometric-contributions)
+
 ## 目录约定
 
 ```
@@ -91,3 +98,4 @@ source/<slug>/
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/disable-pcdn.user.js>
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/luogu-helper.user.js>
 - <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/deepseek-ctrl-enter.user.js>
+- <https://raw.githubusercontent.com/Dynesshely/UserScripts/release/isometric-contributions.user.js>

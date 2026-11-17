@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 220" width="1000" height="220" role="img" aria-label="Isometric Contributions">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111a33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22c55e" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="round"><rect width="1000" height="220" rx="20"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="1000" height="220" fill="url(#card)"/>
+    <circle cx="930" cy="30" r="200" fill="url(#glow)"/>
+    <g transform="translate(48,62)">
+      <rect width="96" height="96" rx="24" fill="url(#accent)" fill-opacity="0.16" stroke="#22c55e" stroke-opacity="0.45"/>
+      <g transform="translate(24,24)">
+        <g fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linejoin="round">
+          <path d="M24 10 L40 19 L24 28 L8 19 Z"/>
+          <path d="M8 19 L8 33 L24 42 L40 33 L40 19"/>
+          <path d="M24 28 L24 42"/>
+        </g>
+      </g>
+    </g>
+    <text x="176" y="86" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="24" font-weight="700" fill="#f8fafc">Isometric Contributions</text>
+    <text x="176" y="120" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">把 GitHub 贡献热力图渲染成等轴测 3D 立方体视图</text>
+    <text x="176" y="146" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">2D / 3D / Both 切换，悬停方块查看日期与贡献数</text>
+    <rect x="190" y="172" width="112" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#22c55e" stroke-opacity="0.35"/>
+    <text x="246" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">3D 等轴测</text>
+    <rect x="312" y="172" width="168" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#22c55e" stroke-opacity="0.35"/>
+    <text x="396" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">2D·3D·Both</text>
+    <rect x="490" y="172" width="84" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#22c55e" stroke-opacity="0.35"/>
+    <text x="532" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">悬停提示</text>
+  </g>
+</svg>
