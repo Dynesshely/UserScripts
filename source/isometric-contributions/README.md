@@ -7,39 +7,37 @@
 - 匹配范围：`https://github.com/*`
 - 许可：MIT · 作者：Dynesshely
 
+## 实现方式
+
+**直接照搬开源扩展 [jasonlong/isometric-contributions](https://github.com/jasonlong/isometric-contributions)（MIT）的实现**，
+在 `src/vendor/` 下原样引入其源码：
+
+| 文件 | 作用 |
+| --- | --- |
+| `vendor/iso.js` | 扩展入口：DOM 注入、数据解析、统计块、2D/3D/Both 切换、历史 streak 补全 |
+| `vendor/utils.js` | 贡献数据解析、设置读写、统计计算、统计块 markup 生成 |
+| `vendor/history.js` | 通过 GitHub 历史贡献接口补全跨年 streak |
+| `vendor/obelisk.min.js` | obelisk.js 等轴测渲染库（MIT） |
+| `vendor/iso.css` | 2D/3D 显隐与布局样式 |
+
+所见的 3D 视图、按钮位置、统计块、颜色与间距均来自扩展原始实现，没有自行重写渲染逻辑。
+
+## 用户脚本环境适配（仅此几处）
+
+- 用 `GM_addStyle`（或 style 标签）注入 `iso.css`；
+- 设置存储：原扩展代码在 `chrome.storage.local` 不可用时自动回退 `localStorage`，用户脚本环境直接走该分支；
+- 移除对旧版 GitHub `.vcard-names-container` 的依赖，改为等待贡献图出现（MutationObserver 兜底）；
+- 容器 / 图表定位宽松化：优先 `.js-yearly-contributions` / `.js-calendar-graph`，找不到时回退到包含贡献单元格的最近元素；
+- 统计块头部读取加空值保护（页面结构差异时不报错）。
+
 ## 功能
 
-- 在个人主页（`https://github.com/<user>`）的贡献图区域插入等轴测 3D 视图；
-- 每个贡献方块按当日贡献数绘制为不同高度的立方体，颜色沿用 GitHub 的绿色梯度（浅色/暗色主题分别配色）；
-- 右上角提供 **2D / 3D / Both** 切换按钮：
-  - **3D**：隐藏原生 2D 热力图，只显示 3D 视图（默认）；
-  - **2D**：只显示原生热力图；
-  - **Both**：两者同时显示；
-- 鼠标悬停方块显示日期与贡献数；
+- 在个人主页贡献图区域渲染等轴测 3D 立方体（高度按当日贡献数，颜色沿用 GitHub 绿色梯度）；
+- 右上角 **2D / 3D / Both** 切换：3D 隐藏原生热力图（默认），2D 只显示原生图，Both 两者都显示；
+- 自动生成 Contributions / Streaks 统计块（总数、最佳日、平均、连击天数）；
+- 页面加载后用 GitHub 历史贡献接口补全跨年 streak；
 - 显示模式保存在 GM 存储中，下次访问沿用；
-- 兼容 GitHub 的 Turbo 页面导航。
-
-## 实现说明
-
-- 数据来自贡献图表格 `td.ContributionCalendar-day` 的 `data-date` / `data-level`，
-  以及 `aria-labelledby` 指向的 `tool-tip` 文本（解析 `N contributions on ...`）；
-- 使用 Canvas 2D 按等轴测投影绘制立方体（顶面 / 左面 / 右面三种明暗），
-  不依赖任何第三方 3D 库；
-- 通过 `body.ic-squares / .ic-cubes / .ic-both` 与 CSS 控制 2D 图的显隐。
-
-## 诊断
-
-如果安装后在个人主页没有看到 3D 视图或切换按钮，打开浏览器开发者工具的控制台，
-过滤 `[Isometric Contributions]`：
-
-- `脚本已加载 v0.0.2`：脚本确实运行了；
-- `尚未找到贡献图单元格，稍后重试（第 N 次）`：会附带诊断信息（`cellSelectorHits`、
-  `dataDateHits`、是否存在 `.js-yearly-contributions` / `.js-calendar-graph`、当前路径），
-  脚本会每 500ms 重试最多 40 次（约 20 秒）；
-- `已找到贡献图并注入 3D 视图`：注入成功，附带找到的单元格数量与容器信息；
-- `渲染完成`：绘制完成，附带天数、列数、最大贡献数、画布尺寸。
-
-如果反复出现「尚未找到贡献图」，把控制台里这些日志（尤其诊断信息对象）提供给开发者即可定位。
+- 兼容 GitHub 的 Turbo 页面导航，自动适配暗色/浅色主题。
 
 ## 构建
 
