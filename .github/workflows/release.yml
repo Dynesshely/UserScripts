@@ -2,7 +2,7 @@ name: Release
 
 # 打 v* 版本 tag 时触发：构建三个脚本，并把构建产物发布到 release 分支。
 # 发布模型是"平台侧自动拉取"：
-#   - 不创建 GitHub Release，也不发布 GitHub Package / npm 包；
+#   - 创建 GitHub Release，附带四个 .user.js 构建产物；不发布 GitHub Package / npm 包；
 #   - 产物只放在 release 分支根目录（扁平结构）；
 #   - GreasyFork 通过 GitHub webhook 感知 release 分支的更新，再从 raw URL 拉取脚本。
 on:
@@ -123,3 +123,15 @@ jobs:
           git commit --quiet -m "chore(release): 发布 ${TAG_NAME} 的构建产物"
           git push origin "HEAD:refs/heads/${RELEASE_BRANCH}"
           echo "${RELEASE_BRANCH} 分支已更新：$(git rev-parse --short HEAD)"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: |
+            source/auto-login/dist/auto-login.user.js
+            source/disable-pcdn/dist/disable-pcdn.user.js
+            source/luogu-helper/dist/luogu-helper.user.js
+            source/deepseek-ctrl-enter/dist/deepseek-ctrl-enter.user.js
+          fail_on_unmatched_files: true

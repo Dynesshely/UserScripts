@@ -37,34 +37,27 @@ npm run build
 
 ### Auto Login
 
-[source/auto-login](source/auto-login)
+<img src="assets/functions/auto-login.svg" alt="Auto Login 功能说明" width="100%" />
 
-在浏览器里保存各站点的账号密码，匹配到登录页时自动填充并提交。
-内置 1Panel、JumpServer、DataEase、Portainer、OMV、TrueNAS 等站点类型；
-未内置的站点可以通过「示教模式」在页面上拾取元素，自由组合「填入用户名 / 填入密码 /
-点击控件 / 等待」等操作，支持两步式登录（先填用户名 → 点下一步 → 等待密码框出现 → 填密码 → 登录）。
+源码：[source/auto-login](source/auto-login)
 
 ### Disable Websites' PCDN
 
-[source/disable-pcdn](source/disable-pcdn)
+<img src="assets/functions/disable-pcdn.svg" alt="Disable Websites' PCDN 功能说明" width="100%" />
 
-阻止网站把访问者当成 PCDN 上传节点：删除页面中的 WebRTC / DataChannel 全局构造器
-（`RTCPeerConnection` 等），让依赖 WebRTC 的 PCDN SDK 无法建立点对点连接。
-当前匹配 `https://*.bilibili.com/*`。
+源码：[source/disable-pcdn](source/disable-pcdn)
 
 ### 洛谷助手
 
-[source/luogu-helper](source/luogu-helper)
+<img src="assets/functions/luogu-helper.svg" alt="洛谷助手功能说明" width="100%" />
 
-洛谷题目列表页增强：右下角悬浮按钮，点开后按「已通过 / 未通过 / 未做」分组统计题号，
-支持一键复制题号；仅在 `/problem/list` 页面显示，兼容洛谷的 SPA 路由切换。
+源码：[source/luogu-helper](source/luogu-helper)
 
 ### DeepSeek: Ctrl+Enter to Send
 
-[source/deepseek-ctrl-enter](source/deepseek-ctrl-enter)
+<img src="assets/functions/deepseek-ctrl-enter.svg" alt="DeepSeek Ctrl+Enter 功能说明" width="100%" />
 
-把 chat.deepseek.com 的发送快捷键从 Enter 改为 Ctrl + Enter（macOS 上为 Cmd + Enter），
-把换行还给 Enter；Shift + Enter 保持原有换行行为。输入法组合输入期间与搜索框不受影响。
+源码：[source/deepseek-ctrl-enter](source/deepseek-ctrl-enter)
 
 ## 目录约定
 
@@ -88,7 +81,7 @@ source/<slug>/
 
 打 `v*` 版本 tag 会触发 [Release workflow](.github/workflows/release.yml)：CI 重新构建全部脚本，
 把产物以扁平文件名发布到 [`release` 分支](https://github.com/Dynesshely/UserScripts/tree/release)。
-脚本平台（GreasyFork 等）通过 GitHub webhook + raw URL 自动拉取更新，不使用 GitHub Release 或 Package。
+同时会创建 GitHub Release 并附带四个 `.user.js` 构建产物；脚本平台（GreasyFork 等）通过 GitHub webhook + raw URL 自动拉取更新。不使用 GitHub Package。
 
 完整的仓库侧发布步骤与平台侧配置见 [docs/RELEASING.md](docs/RELEASING.md)。
 

@@ -3,16 +3,17 @@
 本仓库的发布模型是 **平台侧自动拉取**：打版本 tag 后由 CI 构建，把产物推送到
 `release` 分支；GreasyFork 通过 GitHub webhook 得到通知，再从 raw URL 自动拉取新版本。
 
-- **不创建 GitHub Release**（没有 release 页面、没有 release notes）。
+- **创建 GitHub Release**，把四个 `.user.js` 作为附件上传（产物同时保留在 `release` 分支）。
 - **不发布 GitHub Package / npm 包**，也不把产物作为 Actions artifact 发布。
 - **唯一的发布产物位置就是 `release` 分支**，根目录扁平存放三个 `.user.js`。
 
 ```text
 git tag v* ──▶ GitHub Actions: .github/workflows/release.yml
                     │
-                    ├─ 依次构建 auto-login / disable-pcdn / luogu-helper
+                    ├─ 依次构建 auto-login / disable-pcdn / luogu-helper / deepseek-ctrl-enter
                     ├─ 校验 tag 提交里的 dist/ 是最新构建结果
-                    └─ push 到 release 分支（根目录只有三个 .user.js）
+                    ├─ push 到 release 分支（根目录只有扁平的 .user.js）
+                    └─ 创建 GitHub Release 并上传四个 .user.js 附件
                                 │
                     GitHub webhook（push 事件）
                                 ▼
@@ -167,8 +168,8 @@ release
 
 ## 四、明确不做的事
 
-- **不创建 GitHub Release**：不需要 release 页面、release notes、附件。
-- **不发布 GitHub Package / npm 包**：仓库没有 `publish` 流程。
+- **不发布 GitHub Package / npm 包**：仓库没有 `publish` 流程，Actions 的 `GITHUB_TOKEN` 权限也只给 `contents`。
+- GitHub Release 只用于附带构建产物（下载用），平台同步仍以 `release` 分支的 raw URL 为准。
 - **不上传 Actions artifact 作为发布渠道**：artifact 只是 CI 内部临时文件，产物只进
   `release` 分支。
 - **不手动修改 release 分支**：该分支由 CI 维护，根目录只允许三个 `.user.js`；

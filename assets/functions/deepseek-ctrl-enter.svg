@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 220" width="1000" height="220" role="img" aria-label="DeepSeek: Ctrl+Enter to Send">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111a33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="ACCENT_A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="ACCENT_A" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="round"><rect width="1000" height="220" rx="20"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="1000" height="220" fill="url(#card)"/>
+    <circle cx="930" cy="30" r="200" fill="url(#glow)"/>
+    <g transform="translate(48,62)">
+      <rect width="96" height="96" rx="24" fill="url(#accent)" fill-opacity="0.16" stroke="#3b82f6" stroke-opacity="0.45"/>
+      <g transform="translate(24,24)">
+        <g fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="14" width="36" height="26" rx="6"/>
+          <path d="M14 24 H20"/>
+          <path d="M28 24 H34"/>
+          <path d="M14 32 H26"/>
+          <path d="M30 30 L32 34 L36 28"/>
+        </g>
+      </g>
+    </g>
+    <text x="176" y="86" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">DeepSeek: Ctrl+Enter to Send</text>
+    <text x="176" y="120" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">Ctrl / Cmd + Enter 发送，Enter 换行</text>
+    <text x="176" y="146" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">Shift + Enter 保持原有换行行为</text>
+    <rect x="190" y="172" width="266" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#3b82f6" stroke-opacity="0.35"/>
+    <text x="323" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">chat.deepseek.com</text>
+    <rect x="466" y="172" width="98" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#3b82f6" stroke-opacity="0.35"/>
+    <text x="515" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">输入法友好</text>
+  </g>
+</svg>

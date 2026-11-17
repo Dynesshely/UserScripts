@@ -37,8 +37,10 @@
     <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
       <circle cx="1.5" cy="1.5" r="1.2" fill="#94a3b8" fill-opacity="0.16"/>
     </pattern>
+    <clipPath id="round"><rect width="1280" height="340" rx="24"/></clipPath>
   </defs>
 
+  <g clip-path="url(#round)">
   <rect width="1280" height="340" fill="url(#bg)"/>
 
   <circle cx="1010" cy="70" r="300" fill="url(#glowBlue)">
@@ -97,4 +99,5 @@
   </g>
 
   <text x="1208" y="318" text-anchor="end" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#64748b">GitHub · GreasyFork · CI/CD</text>
+  </g>
 </svg>

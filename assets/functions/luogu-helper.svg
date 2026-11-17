@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 220" width="1000" height="220" role="img" aria-label="洛谷助手">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111a33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#10b981"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="ACCENT_A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="ACCENT_A" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="round"><rect width="1000" height="220" rx="20"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="1000" height="220" fill="url(#card)"/>
+    <circle cx="930" cy="30" r="200" fill="url(#glow)"/>
+    <g transform="translate(48,62)">
+      <rect width="96" height="96" rx="24" fill="url(#accent)" fill-opacity="0.16" stroke="#0ea5e9" stroke-opacity="0.45"/>
+      <g transform="translate(24,24)">
+        <g fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 40 V12"/>
+          <path d="M10 40 H42"/>
+          <rect x="16" y="26" width="7" height="14" rx="1.5"/>
+          <rect x="27" y="18" width="7" height="22" rx="1.5"/>
+          <path d="M38 14 L40 18 L45 11"/>
+        </g>
+      </g>
+    </g>
+    <text x="176" y="86" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="24" font-weight="700" fill="#f8fafc">洛谷助手</text>
+    <text x="176" y="120" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">题目列表页悬浮按钮，按已通过 / 未通过 / 未做统计题号</text>
+    <text x="176" y="146" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="14" fill="#94a3b8">一键复制题号，兼容页面 SPA 路由切换</text>
+    <rect x="190" y="172" width="210" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#0ea5e9" stroke-opacity="0.35"/>
+    <text x="295" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">/problem/list</text>
+    <rect x="410" y="172" width="84" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#0ea5e9" stroke-opacity="0.35"/>
+    <text x="452" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">一键复制</text>
+    <rect x="504" y="172" width="112" height="30" rx="15" fill="url(#accent)" fill-opacity="0.12" stroke="#0ea5e9" stroke-opacity="0.35"/>
+    <text x="560" y="192" text-anchor="middle" font-family="'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif" font-size="12.5" fill="#cbd5e1">SPA 兼容</text>
+  </g>
+</svg>
