@@ -13,6 +13,10 @@
       <stop offset="0" stop-color="#7c3aed" stop-opacity="0.5"/>
       <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="glowCyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.1"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0.04"/>
@@ -27,15 +31,34 @@
   </defs>
 
   <rect width="1280" height="340" fill="url(#bg)"/>
-  <circle cx="1010" cy="70" r="300" fill="url(#glowBlue)"/>
-  <circle cx="170" cy="330" r="260" fill="url(#glowPurple)"/>
-  <rect x="0" y="170" width="1280" height="170" fill="url(#dots)"/>
 
-  <g fill="none" stroke="url(#key)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" transform="translate(1004,44) scale(0.44)" opacity="0.95">
-    <circle cx="196" cy="196" r="72"/>
-    <path d="M248 248 L392 392"/>
-    <path d="M330 330 L378 282"/>
-    <path d="M374 374 L422 326"/>
+  <circle cx="1010" cy="70" r="300" fill="url(#glowBlue)">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 52 -30; -30 26; 0 0" keyTimes="0; 0.33; 0.66; 1" dur="18s" repeatCount="indefinite" begin="-2s"/>
+    <animate attributeName="opacity" values="0.85; 1; 0.7; 0.85" keyTimes="0; 0.33; 0.66; 1" dur="18s" repeatCount="indefinite" begin="-2s"/>
+  </circle>
+  <circle cx="170" cy="330" r="260" fill="url(#glowPurple)">
+    <animateTransform attributeName="transform" type="translate" values="0 0; -42 -22; 34 30; 0 0" keyTimes="0; 0.4; 0.72; 1" dur="24s" repeatCount="indefinite" begin="-7s"/>
+    <animate attributeName="opacity" values="0.75; 0.95; 0.6; 0.75" keyTimes="0; 0.4; 0.72; 1" dur="24s" repeatCount="indefinite" begin="-7s"/>
+  </circle>
+  <circle cx="720" cy="30" r="220" fill="url(#glowCyan)">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 44 32; 0 0" keyTimes="0; 0.5; 1" dur="21s" repeatCount="indefinite" begin="-11s"/>
+    <animate attributeName="opacity" values="0.55; 0.9; 0.55" keyTimes="0; 0.5; 1" dur="21s" repeatCount="indefinite" begin="-11s"/>
+  </circle>
+
+  <rect x="-26" y="170" width="1332" height="170" fill="url(#dots)">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 26 0" dur="26s" repeatCount="indefinite"/>
+  </rect>
+
+  <g transform="translate(1004,44) scale(0.44)" opacity="0.95">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 0 -9; 0 0" keyTimes="0; 0.5; 1" dur="9s" repeatCount="indefinite"/>
+      <g fill="none" stroke="url(#key)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="196" cy="196" r="72"/>
+        <path d="M248 248 L392 392"/>
+        <path d="M330 330 L378 282"/>
+        <path d="M374 374 L422 326"/>
+      </g>
+    </g>
   </g>
 
   <text x="72" y="152" font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-1" fill="#f8fafc">UserScripts</text>
