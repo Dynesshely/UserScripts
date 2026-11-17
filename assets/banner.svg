@@ -6,17 +6,26 @@
       <stop offset="1" stop-color="#1b1140"/>
     </linearGradient>
     <radialGradient id="glowBlue" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#2563eb" stop-opacity="0.55"/>
+      <stop offset="0" stop-color="#2563eb" stop-opacity="0.6"/>
       <stop offset="1" stop-color="#2563eb" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glowPurple" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.5"/>
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.55"/>
       <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glowCyan" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.4"/>
       <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="glowPink" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ec4899" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
     <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.1"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0.04"/>
@@ -26,32 +35,64 @@
       <stop offset="1" stop-color="#a78bfa" stop-opacity="0.9"/>
     </linearGradient>
     <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
-      <circle cx="1.5" cy="1.5" r="1.2" fill="#94a3b8" fill-opacity="0.16"/>
+      <circle cx="1.5" cy="1.5" r="1.2" fill="#94a3b8" fill-opacity="0.18"/>
     </pattern>
   </defs>
 
   <rect width="1280" height="340" fill="url(#bg)"/>
 
-  <circle cx="1010" cy="70" r="300" fill="url(#glowBlue)">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 52 -30; -30 26; 0 0" keyTimes="0; 0.33; 0.66; 1" dur="18s" repeatCount="indefinite" begin="-2s"/>
-    <animate attributeName="opacity" values="0.85; 1; 0.7; 0.85" keyTimes="0; 0.33; 0.66; 1" dur="18s" repeatCount="indefinite" begin="-2s"/>
-  </circle>
-  <circle cx="170" cy="330" r="260" fill="url(#glowPurple)">
-    <animateTransform attributeName="transform" type="translate" values="0 0; -42 -22; 34 30; 0 0" keyTimes="0; 0.4; 0.72; 1" dur="24s" repeatCount="indefinite" begin="-7s"/>
-    <animate attributeName="opacity" values="0.75; 0.95; 0.6; 0.75" keyTimes="0; 0.4; 0.72; 1" dur="24s" repeatCount="indefinite" begin="-7s"/>
-  </circle>
-  <circle cx="720" cy="30" r="220" fill="url(#glowCyan)">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 44 32; 0 0" keyTimes="0; 0.5; 1" dur="21s" repeatCount="indefinite" begin="-11s"/>
-    <animate attributeName="opacity" values="0.55; 0.9; 0.55" keyTimes="0; 0.5; 1" dur="21s" repeatCount="indefinite" begin="-11s"/>
-  </circle>
+  <g transform="translate(1010,70)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 130 -70; -90 50; 0 0" keyTimes="0; 0.35; 0.7; 1" dur="10s" repeatCount="indefinite"/>
+      <circle r="300" fill="url(#glowBlue)">
+        <animateTransform attributeName="transform" type="scale" values="1; 1.45; 0.82; 1" keyTimes="0; 0.35; 0.7; 1" dur="10s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.55; 1; 0.5; 0.55" keyTimes="0; 0.35; 0.7; 1" dur="10s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
 
-  <rect x="-26" y="170" width="1332" height="170" fill="url(#dots)">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 26 0" dur="26s" repeatCount="indefinite"/>
+  <g transform="translate(170,330)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; -110 -40; 90 55; 0 0" keyTimes="0; 0.4; 0.75; 1" dur="13s" repeatCount="indefinite" begin="-4s"/>
+      <circle r="260" fill="url(#glowPurple)">
+        <animateTransform attributeName="transform" type="scale" values="1; 1.4; 0.85; 1" keyTimes="0; 0.4; 0.75; 1" dur="13s" repeatCount="indefinite" begin="-4s"/>
+        <animate attributeName="opacity" values="0.6; 1; 0.55; 0.6" keyTimes="0; 0.4; 0.75; 1" dur="13s" repeatCount="indefinite" begin="-4s"/>
+      </circle>
+    </g>
+  </g>
+
+  <g transform="translate(720,20)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 120 60; -100 -30; 0 0" keyTimes="0; 0.4; 0.75; 1" dur="11s" repeatCount="indefinite" begin="-7s"/>
+      <circle r="220" fill="url(#glowCyan)">
+        <animateTransform attributeName="transform" type="scale" values="1; 1.5; 0.8; 1" keyTimes="0; 0.4; 0.75; 1" dur="11s" repeatCount="indefinite" begin="-7s"/>
+        <animate attributeName="opacity" values="0.5; 0.95; 0.45; 0.5" keyTimes="0; 0.4; 0.75; 1" dur="11s" repeatCount="indefinite" begin="-7s"/>
+      </circle>
+    </g>
+  </g>
+
+  <g transform="translate(1210,240)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; -90 30; 60 -50; 0 0" keyTimes="0; 0.45; 0.8; 1" dur="15s" repeatCount="indefinite" begin="-2s"/>
+      <circle r="200" fill="url(#glowPink)">
+        <animateTransform attributeName="transform" type="scale" values="1; 1.35; 0.9; 1" keyTimes="0; 0.45; 0.8; 1" dur="15s" repeatCount="indefinite" begin="-2s"/>
+        <animate attributeName="opacity" values="0.45; 0.9; 0.5; 0.45" keyTimes="0; 0.45; 0.8; 1" dur="15s" repeatCount="indefinite" begin="-2s"/>
+      </circle>
+    </g>
+  </g>
+
+  <rect x="-52" y="170" width="1384" height="170" fill="url(#dots)">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 52 0" dur="12s" repeatCount="indefinite"/>
   </rect>
+
+  <g opacity="0.1">
+    <animateTransform attributeName="transform" type="translate" values="-500 0; 1720 0" dur="7s" repeatCount="indefinite"/>
+    <rect x="0" y="-170" width="240" height="680" fill="url(#sweep)" transform="rotate(-18 120 170)"/>
+  </g>
 
   <g transform="translate(1004,44) scale(0.44)" opacity="0.95">
     <g>
-      <animateTransform attributeName="transform" type="translate" values="0 0; 0 -9; 0 0" keyTimes="0; 0.5; 1" dur="9s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 0 -18; 0 0" keyTimes="0; 0.5; 1" dur="6s" repeatCount="indefinite"/>
       <g fill="none" stroke="url(#key)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="196" cy="196" r="72"/>
         <path d="M248 248 L392 392"/>
