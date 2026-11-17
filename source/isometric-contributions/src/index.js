@@ -1,6 +1,10 @@
 /**
  * Isometric Contributions (userscript)
  *
+ * Based on "Isometric Contributions" by Jason Long (MIT License):
+ *   https://github.com/jasonlong/isometric-contributions
+ *   Copyright (c) 2014 Jason Long
+ *
  * 直接照搬开源扩展 jasonlong/isometric-contributions 的实现：
  *   - vendor/iso.js: 扩展入口逻辑（DOM 注入、数据解析、统计块、视图切换）
  *   - vendor/utils.js: 解析 / 设置 / 统计工具

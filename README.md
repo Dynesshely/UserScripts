@@ -66,6 +66,9 @@ npm run build
 
 源码：[source/isometric-contributions](source/isometric-contributions)
 
+实现来自开源扩展 [jasonlong/isometric-contributions](https://github.com/jasonlong/isometric-contributions)
+（MIT License，Copyright (c) 2014 Jason Long），仅做用户脚本环境适配。
+
 ## 目录约定
 
 ```
