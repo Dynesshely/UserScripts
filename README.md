@@ -12,7 +12,7 @@
 
 | 目录 | 脚本名 | 安装/更新源 | 许可 |
 | --- | --- | --- | --- |
-| [source/auto-login](source/auto-login) | Auto Login | release 分支 raw / 手动导入 ScriptCat | ISC |
+| [source/auto-login](source/auto-login) | Auto Login | release 分支 raw / 手动导入 ScriptCat | MIT |
 | [source/disable-pcdn](source/disable-pcdn) | Disable Websites' PCDN | [GreasyFork 491421](https://greasyfork.org/zh-CN/scripts/491421) | MIT |
 | [source/luogu-helper](source/luogu-helper) | 洛谷助手 | [GreasyFork 581027](https://greasyfork.org/zh-CN/scripts/581027) | MIT |
 | [source/deepseek-ctrl-enter](source/deepseek-ctrl-enter) | DeepSeek: Ctrl+Enter to Send | release 分支 raw（GreasyFork 待发布） | MIT |

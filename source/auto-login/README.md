@@ -70,3 +70,7 @@ npm run build
 ```
 
 输出：`dist/auto-login.user.js`。
+
+## 许可
+
+MIT · 作者：Dynesshely

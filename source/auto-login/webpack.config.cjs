@@ -13,9 +13,10 @@ module.exports = {
       headers: {
         name: "Auto Login",
         namespace: "http://scriptcat.org/",
-        version: "2026-11-12-6",
+        version: "2026-11-12-7",
         description: "Auto-login on configured sites with locally stored credentials",
         author: "Dynesshely",
+        license: "MIT",
         match: ["*", "*://*/*"],
         icon: "https://raw.githubusercontent.com/Dynesshely/UserScripts/main/assets/auto-login/logo.png",
         grant: [
